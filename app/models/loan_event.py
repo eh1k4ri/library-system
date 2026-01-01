@@ -9,10 +9,8 @@ class LoanEvent(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     loan_id = Column(Integer, ForeignKey("loans.id"), nullable=False)
-
     old_status_id = Column(Integer, ForeignKey("loan_status.id"), nullable=True)
     new_status_id = Column(Integer, ForeignKey("loan_status.id"), nullable=False)
-
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     loan = relationship("Loan", back_populates="events")
