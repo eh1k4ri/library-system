@@ -1,42 +1,30 @@
 from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional, List
+from uuid import UUID
 from .book import BookResponse
 from .user import UserResponse
+from .loan_status import LoanStatusResponse
+from .loan_events import LoanEventResponse
 
-class LoanEventResponse(BaseModel):
-    id: int
-    event_type: str # Para simplificar, usamos o nome do status novo como tipo
-    description: Optional[str] = None
-    created_at: datetime
-    
-    class Config:
-        from_attributes = True
 
-# --- Empréstimo ---
-
-# Input: Só precisamos saber QUEM e QUAL LIVRO
 class LoanCreate(BaseModel):
-    user_id: int
-    book_id: int
-    days: int = 7 # Padrão de 7 dias, mas o front pode mudar
+    user_key: UUID
+    book_key: UUID
+    days: int = 7
 
-# Output: Retorna o objeto completo com status aninhado
+
 class LoanResponse(BaseModel):
-    id: int
+    loan_key: UUID
     start_date: datetime
     due_date: datetime
     return_date: Optional[datetime] = None
-    status_slug: str # Vamos extrair o slug do relacionamento
-    
-    # Nested Objects (Opcional: trazer os dados do livro e usuário junto)
-    book: BookResponse
+    fine_amount: float
+
     user: UserResponse
-    events: List[LoanEventResponse] = []
+    book: BookResponse
+    status_rel: LoanStatusResponse
+    loan_events: List[LoanEventResponse] = []
 
     class Config:
         from_attributes = True
-
-    # Hackzinho para pegar o status.slug flattenizado
-    # O Pydantic v2 faz isso elegante, mas vamos manter simples:
-    # O backend vai tratar isso na rota.
