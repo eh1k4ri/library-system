@@ -5,7 +5,7 @@ from uuid import UUID
 from .book import BookResponse
 from .user import UserResponse
 from .loan_status import LoanStatusResponse
-from .loan_events import LoanEventResponse
+from .loan_event import LoanEventResponse
 
 
 class LoanCreate(BaseModel):

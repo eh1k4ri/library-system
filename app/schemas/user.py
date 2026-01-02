@@ -1,6 +1,8 @@
 from pydantic import BaseModel, EmailStr
 from datetime import datetime
+from uuid import UUID
 from typing import Optional
+from .user_status import UserStatusResponse
 
 
 class UserBase(BaseModel):
@@ -12,15 +14,10 @@ class UserCreate(UserBase):
     pass
 
 
-class UserUpdate(BaseModel):
-    name: Optional[str] = None
-    email: Optional[EmailStr] = None
-
-
 class UserResponse(UserBase):
-    id: int
-    is_active: bool
+    user_key: UUID
     created_at: datetime
+    status_rel: UserStatusResponse
 
     class Config:
         from_attributes = True

@@ -1,6 +1,8 @@
 from pydantic import BaseModel
 from datetime import datetime
-from typing import Optional
+from uuid import UUID
+from typing import Optional, List
+from .book_status import BookStatusResponse
 
 
 class BookBase(BaseModel):
@@ -15,14 +17,12 @@ class BookCreate(BookBase):
 class BookUpdate(BaseModel):
     title: Optional[str] = None
     author: Optional[str] = None
-    is_available: Optional[bool] = None
 
 
 class BookResponse(BookBase):
-    id: int
-    is_available: bool
-    is_active: bool
+    book_key: UUID
     created_at: datetime
+    status_rel: BookStatusResponse
 
     class Config:
         from_attributes = True
