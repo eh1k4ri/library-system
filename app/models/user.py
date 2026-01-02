@@ -1,8 +1,8 @@
 import uuid
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy import Column, Integer, String, DateTime, Boolean
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
-from sqlalchemy.sql import func, expression
+from sqlalchemy.sql import func
 from app.db.session import Base
 
 
@@ -15,9 +15,11 @@ class User(Base):
     )
     name = Column(String, nullable=False)
     email = Column(String, unique=True, index=True, nullable=False)
-    is_active = Column(
-        Boolean, default=True, server_default=expression.true(), nullable=False
-    )
+    status_id = Column(Integer, ForeignKey("user_status.id"), nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     loans = relationship("Loan", back_populates="user")
+    status_rel = relationship("UserStatus", back_populates="users")
+    user_events = relationship(
+        "UserEvent", back_populates="user", cascade="all, delete-orphan"
+    )
