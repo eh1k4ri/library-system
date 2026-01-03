@@ -3,6 +3,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.db.session import Base
 
+
 class UserStatus(Base):
     __tablename__ = "user_status"
 
@@ -11,4 +12,4 @@ class UserStatus(Base):
     translation = Column(String, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
-    users = relationship("User", back_populates="status_rel")
+    users = relationship("User", back_populates="status")

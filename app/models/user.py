@@ -19,7 +19,7 @@ class User(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     loans = relationship("Loan", back_populates="user")
-    status_rel = relationship("UserStatus", back_populates="users")
+    status = relationship("UserStatus", back_populates="users")
     user_events = relationship(
         "UserEvent", back_populates="user", cascade="all, delete-orphan"
     )

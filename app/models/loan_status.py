@@ -12,4 +12,4 @@ class LoanStatus(Base):
     translation = Column(String, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
-    loans = relationship("Loan", back_populates="status_rel")
+    loans = relationship("Loan", back_populates="status")

@@ -29,7 +29,7 @@ class Loan(Base):
 
     user = relationship("User", back_populates="loans")
     book = relationship("Book", back_populates="loans")
-    status_rel = relationship("LoanStatus", back_populates="loans")
+    status = relationship("LoanStatus", back_populates="loans")
     events = relationship(
         "LoanEvent", back_populates="loan", cascade="all, delete-orphan"
     )

@@ -12,4 +12,4 @@ class BookStatus(Base):
     translation = Column(String, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
-    books = relationship("Book", back_populates="status_rel")
+    books = relationship("Book", back_populates="status")
