@@ -18,12 +18,12 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
 
 
 @router.get("/", response_model=List[UserResponse])
-def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+def get_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     return service.get_all(db, skip, limit)
 
 
 @router.get("/{user_key}", response_model=UserResponse)
-def read_user(user_key: UUID, db: Session = Depends(get_db)):
+def get_user(user_key: UUID, db: Session = Depends(get_db)):
     user = service.get_by_key(db, user_key)
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
@@ -31,7 +31,7 @@ def read_user(user_key: UUID, db: Session = Depends(get_db)):
 
 
 @router.get("/{user_key}/loans", response_model=List[LoanResponse])
-def read_user_loans(
+def get_user_loans(
     user_key: UUID, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
 ):
     loans = service.get_user_loans(db, user_key, skip, limit)

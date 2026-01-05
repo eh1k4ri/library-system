@@ -15,6 +15,29 @@ class LoanService:
     def get_loans(self, db: Session, skip: int = 0, limit: int = 100):
         return db.query(Loan).offset(skip).limit(limit).all()
 
+    def get_loans_filtered(
+        self,
+        db: Session,
+        skip: int = 0,
+        limit: int = 100,
+        status: str | None = None,
+        overdue: bool = False,
+    ):
+        query = db.query(Loan)
+
+        if status:
+            query = query.join(Loan.status).filter(LoanStatus.enumerator == status)
+
+        if overdue:
+            now = datetime.now(timezone.utc)
+            query = (
+                query.join(Loan.status)
+                .filter(LoanStatus.enumerator == "active")
+                .filter(Loan.due_date < now)
+            )
+
+        return query.offset(skip).limit(limit).all()
+
     def get_loan_by_key(self, db: Session, loan_key: str):
         try:
             loan_key = uuid.UUID(str(loan_key))

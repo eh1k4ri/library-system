@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.db.session import get_db
@@ -11,8 +11,16 @@ service = LoanService()
 
 
 @router.get("/", response_model=List[LoanResponse])
-def read_loans(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    loans = service.get_loans(db, skip=skip, limit=limit)
+def read_loans(
+    skip: int = 0,
+    limit: int = 100,
+    status: Optional[str] = None,
+    overdue: bool = False,
+    db: Session = Depends(get_db),
+):
+    loans = service.get_loans_filtered(
+        db, skip=skip, limit=limit, status=status, overdue=overdue
+    )
     return loans
 
 

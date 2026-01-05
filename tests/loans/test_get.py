@@ -70,3 +70,45 @@ def test_get_loans_pagination(client):
     response = client.get("/loans/?skip=2&limit=2")
     assert response.status_code == 200
     assert len(response.json()) <= 2
+
+
+def test_get_loans_filter_status_and_overdue(client):
+    user_response = client.post(
+        "/users/", json={"name": "Filter User", "email": "filter.user@example.com"}
+    )
+    user_key = user_response.json()["user_key"]
+
+    b1 = client.post("/books/", json={"title": "Filter Book 1", "author": "A"}).json()[
+        "book_key"
+    ]
+    b2 = client.post("/books/", json={"title": "Filter Book 2", "author": "B"}).json()[
+        "book_key"
+    ]
+
+    loan1 = client.post("/loans/", json={"user_key": user_key, "book_key": b1}).json()
+    assert loan1
+
+    loan2 = client.post("/loans/", json={"user_key": user_key, "book_key": b2}).json()
+    assert loan2
+
+    ret = client.post("/loans/return", json={"book_key": b2})
+    assert ret.status_code == 200
+
+    r_active = client.get("/loans/?status=active")
+    assert r_active.status_code == 200
+    active_loans = r_active.json()
+    assert any(l["loan_key"] == loan1["loan_key"] for l in active_loans)
+    assert all(l["status"]["enumerator"] == "active" for l in active_loans)
+
+    b3 = client.post("/books/", json={"title": "Overdue Book", "author": "C"}).json()[
+        "book_key"
+    ]
+    overdue_loan = client.post(
+        "/loans/", json={"user_key": user_key, "book_key": b3, "days": -5}
+    )
+    assert overdue_loan.status_code == 201
+
+    r_overdue = client.get("/loans/?overdue=true")
+    assert r_overdue.status_code == 200
+    overdue_list = r_overdue.json()
+    assert any(l["book"]["book_key"] == b3 for l in overdue_list)
