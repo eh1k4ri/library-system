@@ -32,6 +32,7 @@ def session_fixture():
             BookStatus(enumerator="available", translation="Disponível"),
             BookStatus(enumerator="loaned", translation="Emprestado"),
             LoanStatus(enumerator="active", translation="Ativo"),
+            LoanStatus(enumerator="returned", translation="Devolvido"),
         ]
     )
     db.commit()

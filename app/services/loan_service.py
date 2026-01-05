@@ -1,7 +1,7 @@
+import uuid
 from datetime import datetime, timedelta, timezone
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
-
 from app.models.loan import Loan
 from app.models.book import Book
 from app.models.user import User
@@ -16,6 +16,10 @@ class LoanService:
         return db.query(Loan).offset(skip).limit(limit).all()
 
     def get_loan_by_key(self, db: Session, loan_key: str):
+        try:
+            loan_key = uuid.UUID(str(loan_key))
+        except Exception:
+            return None
         return db.query(Loan).filter(Loan.loan_key == loan_key).first()
 
     def create_loan(self, db: Session, loan_data: LoanCreate):
@@ -100,8 +104,13 @@ class LoanService:
             now = datetime.now(timezone.utc)
 
             fine = 0.0
-            if now > loan.due_date:
-                days_late = (now - loan.due_date).days + 1
+
+            due_date = loan.due_date
+            if due_date is not None and due_date.tzinfo is None:
+                due_date = due_date.replace(tzinfo=timezone.utc)
+
+            if due_date is not None and now > due_date:
+                days_late = (now - due_date).days + 1
                 fine = days_late * 2.0
 
             returned_status = (

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
 
@@ -18,3 +18,11 @@ def create_book(book: BookCreate, db: Session = Depends(get_db)):
 @router.get("/", response_model=List[BookResponse])
 def read_books(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     return service.get_all(db=db, skip=skip, limit=limit)
+
+
+@router.get("/{book_key}", response_model=BookResponse)
+def read_book(book_key: str, db: Session = Depends(get_db)):
+    book = service.get_by_key(db=db, book_key=book_key)
+    if book is None:
+        raise HTTPException(status_code=404, detail="Book not found")
+    return book
