@@ -1,7 +1,10 @@
 from fastapi import FastAPI
 from app.api import users, books, healthcheck, loans
 
-app = FastAPI(title="Library System API")
+app = FastAPI(
+    title="Library System API",
+    docs_url="/docs",
+)
 
 app.include_router(healthcheck.router, prefix="", tags=["System"])
 
