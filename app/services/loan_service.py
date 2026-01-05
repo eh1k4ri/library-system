@@ -12,7 +12,6 @@ from app.schemas.loan import LoanCreate, LoanReturnRequest
 
 
 class LoanService:
-
     def get_loans(self, db: Session, skip: int = 0, limit: int = 100):
         return db.query(Loan).offset(skip).limit(limit).all()
 

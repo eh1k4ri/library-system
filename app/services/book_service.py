@@ -4,16 +4,17 @@ from app.models.book import Book
 from app.models.book_status import BookStatus
 from app.schemas.book import BookCreate
 
+
 class BookService:
     def create(self, db: Session, book: BookCreate):
-        available_status = db.query(BookStatus).filter(BookStatus.enumerator == 'available').first()
+        available_status = (
+            db.query(BookStatus).filter(BookStatus.enumerator == "available").first()
+        )
         if not available_status:
             raise HTTPException(status_code=500, detail="Status 'available' not found")
 
         new_book = Book(
-            title=book.title,
-            author=book.author,
-            status_id=available_status.id
+            title=book.title, author=book.author, status_id=available_status.id
         )
         db.add(new_book)
         db.commit()

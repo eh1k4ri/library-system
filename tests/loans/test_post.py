@@ -6,7 +6,6 @@ client = TestClient(app)
 
 
 def test_loan_sucess():
-
     random_code = str(uuid4())[:8]
     email = f"loan.{random_code}@test.com"
 
