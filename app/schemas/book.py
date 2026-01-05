@@ -22,7 +22,7 @@ class BookUpdate(BaseModel):
 class BookResponse(BookBase):
     book_key: UUID
     created_at: datetime
-    status_rel: BookStatusResponse
+    status: BookStatusResponse
 
     class Config:
         from_attributes = True

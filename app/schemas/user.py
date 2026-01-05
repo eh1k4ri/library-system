@@ -17,7 +17,7 @@ class UserCreate(UserBase):
 class UserResponse(UserBase):
     user_key: UUID
     created_at: datetime
-    status_rel: UserStatusResponse
+    status: UserStatusResponse
 
     class Config:
         from_attributes = True

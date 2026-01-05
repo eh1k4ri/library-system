@@ -23,7 +23,7 @@ class LoanResponse(BaseModel):
 
     user: UserResponse
     book: BookResponse
-    status_rel: LoanStatusResponse
+    status: LoanStatusResponse
     loan_events: List[LoanEventResponse] = []
 
     class Config:
