@@ -2,7 +2,6 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from uuid import UUID
-
 from app.db.session import get_db
 from app.services.loan_service import LoanService
 from app.schemas.loan import LoanCreate, LoanResponse, LoanReturnRequest
@@ -21,8 +20,8 @@ def read_loans(
 ):
     loans = service.get_loans_filtered(
         db,
-        page=pagination.page,
-        per_page=pagination.per_page,
+        skip=pagination.skip,
+        limit=pagination.per_page,
         status=status,
         overdue=overdue,
     )
