@@ -1,5 +1,4 @@
 def test_get_user_loans_empty(client):
-
     user_response = client.post(
         "/users/", json={"name": "Test User", "email": "test@example.com"}
     )
@@ -34,7 +33,6 @@ def test_get_user_with_loans(client):
 
 
 def test_get_user_loans_pagination(client):
-
     user_response = client.post(
         "/users/", json={"name": "Test User", "email": "test@example.com"}
     )
