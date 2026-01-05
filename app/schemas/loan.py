@@ -11,7 +11,7 @@ from .loan_event import LoanEventResponse
 class LoanCreate(BaseModel):
     user_key: UUID
     book_key: UUID
-    days: int = 7
+    days: int = 14
 
 
 class LoanResponse(BaseModel):

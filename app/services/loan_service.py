@@ -25,6 +25,18 @@ class LoanService:
         if user.status.enumerator != "active":
             raise HTTPException(400, "User is not active")
 
+        active_loan_status = (
+            db.query(LoanStatus).filter(LoanStatus.enumerator == "active").first()
+        )
+
+        active_loans_count = (
+            db.query(Loan)
+            .filter(Loan.user_id == user.id, Loan.status_id == active_loan_status.id)
+            .count()
+        )
+        if active_loans_count >= 3:
+            raise HTTPException(400, "User has reached maximum of 3 active loans")
+
         book = db.query(Book).filter(Book.book_key == loan_data.book_key).first()
         if not book:
             raise HTTPException(404, "Book not found")
@@ -35,12 +47,8 @@ class LoanService:
             loaned_status = (
                 db.query(BookStatus).filter(BookStatus.enumerator == "loaned").first()
             )
-            active_loan_status = (
-                db.query(LoanStatus).filter(LoanStatus.enumerator == "active").first()
-            )
 
             book.status_id = loaned_status.id
-
             now = datetime.now(timezone.utc)
             due_date = now + timedelta(days=loan_data.days)
 
@@ -94,7 +102,7 @@ class LoanService:
             fine = 0.0
             if now > loan.due_date:
                 days_late = (now - loan.due_date).days + 1
-                fine = days_late * 1.0
+                fine = days_late * 2.0
 
             returned_status = (
                 db.query(LoanStatus).filter(LoanStatus.enumerator == "returned").first()
