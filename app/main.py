@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.api import users, books, healthcheck, loans
+from app.api.routers import users, books, healthcheck, loans
 
 app = FastAPI(
     title="Library System API",
