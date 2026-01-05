@@ -26,3 +26,7 @@ class LoanResponse(BaseModel):
     events: List[LoanEventResponse] = []
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class LoanReturnRequest(BaseModel):
+    book_key: UUID
