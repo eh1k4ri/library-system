@@ -18,8 +18,12 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
 
 
 @router.get("/", response_model=List[UserResponse])
-def get_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    return service.get_all(db, skip, limit)
+def get_users(page: int = 1, per_page: int = 100, db: Session = Depends(get_db)):
+    if page < 1:
+        raise HTTPException(status_code=400, detail="page must be >= 1")
+    if per_page < 1:
+        raise HTTPException(status_code=400, detail="per_page must be >= 1")
+    return service.get_all(db, page, per_page)
 
 
 @router.get("/{user_key}", response_model=UserResponse)
@@ -32,9 +36,13 @@ def get_user(user_key: UUID, db: Session = Depends(get_db)):
 
 @router.get("/{user_key}/loans", response_model=List[LoanResponse])
 def get_user_loans(
-    user_key: UUID, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
+    user_key: UUID, page: int = 1, per_page: int = 100, db: Session = Depends(get_db)
 ):
-    loans = service.get_user_loans(db, user_key, skip, limit)
+    if page < 1:
+        raise HTTPException(status_code=400, detail="page must be >= 1")
+    if per_page < 1:
+        raise HTTPException(status_code=400, detail="per_page must be >= 1")
+    loans = service.get_user_loans(db, user_key, page, per_page)
     if loans is None:
         raise HTTPException(status_code=404, detail="User not found")
     return loans

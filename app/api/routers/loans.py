@@ -12,14 +12,18 @@ service = LoanService()
 
 @router.get("/", response_model=List[LoanResponse])
 def read_loans(
-    skip: int = 0,
-    limit: int = 100,
+    page: int = 1,
+    per_page: int = 100,
     status: Optional[str] = None,
     overdue: bool = False,
     db: Session = Depends(get_db),
 ):
+    if page < 1:
+        raise HTTPException(status_code=400, detail="page must be >= 1")
+    if per_page < 1:
+        raise HTTPException(status_code=400, detail="per_page must be >= 1")
     loans = service.get_loans_filtered(
-        db, skip=skip, limit=limit, status=status, overdue=overdue
+        db, page=page, per_page=per_page, status=status, overdue=overdue
     )
     return loans
 

@@ -5,6 +5,7 @@ from typing import List
 from app.db.session import get_db
 from app.schemas.book import BookCreate, BookResponse, BookAvailabilityResponse
 from app.services.book_service import BookService
+from app.api.deps import PaginationParams
 
 router = APIRouter()
 service = BookService()
@@ -16,8 +17,8 @@ def create_book(book: BookCreate, db: Session = Depends(get_db)):
 
 
 @router.get("/", response_model=List[BookResponse])
-def get_books(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    return service.get_all(db=db, skip=skip, limit=limit)
+def get_books(pagination: PaginationParams = Depends(), db: Session = Depends(get_db)):
+    return service.get_all(db=db, page=pagination.page, per_page=pagination.per_page)
 
 
 @router.get("/{book_key}", response_model=BookResponse)
