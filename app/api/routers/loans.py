@@ -1,10 +1,12 @@
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from uuid import UUID
+
 from app.db.session import get_db
 from app.services.loan_service import LoanService
 from app.schemas.loan import LoanCreate, LoanResponse, LoanReturnRequest
-from uuid import UUID
+from app.api.deps import PaginationParams
 
 router = APIRouter()
 service = LoanService()
@@ -12,18 +14,17 @@ service = LoanService()
 
 @router.get("/", response_model=List[LoanResponse])
 def read_loans(
-    page: int = 1,
-    per_page: int = 100,
     status: Optional[str] = None,
     overdue: bool = False,
+    pagination: PaginationParams = Depends(),
     db: Session = Depends(get_db),
 ):
-    if page < 1:
-        raise HTTPException(status_code=400, detail="page must be >= 1")
-    if per_page < 1:
-        raise HTTPException(status_code=400, detail="per_page must be >= 1")
     loans = service.get_loans_filtered(
-        db, page=page, per_page=per_page, status=status, overdue=overdue
+        db,
+        page=pagination.page,
+        per_page=pagination.per_page,
+        status=status,
+        overdue=overdue,
     )
     return loans
 
