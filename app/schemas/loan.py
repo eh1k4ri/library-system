@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from datetime import datetime
 from typing import Optional, List
 from uuid import UUID
@@ -20,11 +20,9 @@ class LoanResponse(BaseModel):
     due_date: datetime
     return_date: Optional[datetime] = None
     fine_amount: float
-
     user: UserResponse
     book: BookResponse
     status: LoanStatusResponse
-    loan_events: List[LoanEventResponse] = []
+    events: List[LoanEventResponse] = []
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

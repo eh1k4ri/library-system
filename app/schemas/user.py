@@ -1,7 +1,6 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, ConfigDict
 from datetime import datetime
 from uuid import UUID
-from typing import Optional
 from .user_status import UserStatusResponse
 
 
@@ -19,5 +18,4 @@ class UserResponse(UserBase):
     created_at: datetime
     status: UserStatusResponse
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

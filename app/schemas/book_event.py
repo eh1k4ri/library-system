@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from datetime import datetime
 from typing import Optional
 from .book_status import BookStatusResponse
@@ -9,5 +9,4 @@ class BookEventResponse(BaseModel):
     new_status: BookStatusResponse
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

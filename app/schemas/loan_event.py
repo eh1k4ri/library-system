@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from datetime import datetime
 from typing import Optional
 from .loan_status import LoanStatusResponse
@@ -9,5 +9,4 @@ class LoanEventResponse(BaseModel):
     new_status: LoanStatusResponse
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
