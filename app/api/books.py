@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from typing import List
 
 from app.db.session import get_db
-from app.schemas.book import BookCreate, BookResponse
+from app.schemas.book import BookCreate, BookResponse, BookAvailabilityResponse
 from app.services.book_service import BookService
 
 router = APIRouter()
@@ -26,3 +26,11 @@ def read_book(book_key: str, db: Session = Depends(get_db)):
     if book is None:
         raise HTTPException(status_code=404, detail="Book not found")
     return book
+
+
+@router.get("/{book_key}/availability", response_model=BookAvailabilityResponse)
+def check_book_availability(book_key: str, db: Session = Depends(get_db)):
+    result = service.check_availability(db, book_key)
+    if result is None:
+        raise HTTPException(status_code=404, detail="Book not found")
+    return result

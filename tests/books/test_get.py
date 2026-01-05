@@ -42,6 +42,46 @@ def test_get_books_pagination(client):
     assert response.status_code == 200
     assert len(response.json()) <= 2
 
+
+def test_get_availability(client):
+    resp = client.post("/books/", json={"title": "Avail Book", "author": "Author A"})
+    assert resp.status_code == 201
+    book_key = resp.json()["book_key"]
+
+    a = client.get(f"/books/{book_key}/availability")
+    assert a.status_code == 200
+    data = a.json()
+    assert data["available"] is True
+    assert data["status"] == "available"
+
+    user_resp = client.post(
+        "/users/", json={"name": "Loan User", "email": "loanuser2@example.com"}
+    )
+    assert user_resp.status_code == 201
+    user_key = user_resp.json()["user_key"]
+
+    book_resp = client.post(
+        "/books/", json={"title": "Loaned Book", "author": "Author B"}
+    )
+    assert book_resp.status_code == 201
+    loan_book_key = book_resp.json()["book_key"]
+
+    loan_resp = client.post(
+        "/loans/", json={"user_key": user_key, "book_key": loan_book_key}
+    )
+    assert loan_resp.status_code == 201
+
+    a2 = client.get(f"/books/{loan_book_key}/availability")
+    assert a2.status_code == 200
+    data2 = a2.json()
+    assert data2["available"] is False
+    assert data2["status"] == "loaned"
+
+    fake_key = "00000000-0000-0000-0000-000000000000"
+    resp_nf = client.get(f"/books/{fake_key}/availability")
+    assert resp_nf.status_code == 404
+    assert resp_nf.json()["detail"] == "Book not found"
+
     response = client.get("/books/?skip=2&limit=2")
     assert response.status_code == 200
     assert len(response.json()) <= 2

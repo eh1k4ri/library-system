@@ -2,6 +2,8 @@ from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from app.models.book import Book
 from app.models.book_status import BookStatus
+from app.models.loan import Loan
+from app.models.loan_status import LoanStatus
 from app.schemas.book import BookCreate
 import uuid
 
@@ -32,3 +34,31 @@ class BookService:
             return None
 
         return db.query(Book).filter(Book.book_key == book_key).first()
+
+    def check_availability(self, db: Session, book_key: str):
+        book = self.get_by_key(db, book_key)
+        if not book:
+            return None
+
+        response = {
+            "available": False,
+            "status": book.status.enumerator,
+            "expected_return_date": None,
+        }
+
+        if book.status.enumerator == "available":
+            response["available"] = True
+            return response
+
+        if book.status.enumerator == "loaned":
+            active_loan = (
+                db.query(Loan)
+                .join(Loan.status)
+                .filter(Loan.book_id == book.id, LoanStatus.enumerator == "active")
+                .first()
+            )
+
+            if active_loan:
+                response["expected_return_date"] = active_loan.due_date
+
+        return response

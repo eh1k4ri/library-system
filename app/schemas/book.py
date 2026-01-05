@@ -19,6 +19,12 @@ class BookUpdate(BaseModel):
     author: Optional[str] = None
 
 
+class BookAvailabilityResponse(BaseModel):
+    available: bool
+    status: str
+    expected_return_date: Optional[datetime] = None
+
+
 class BookResponse(BookBase):
     book_key: UUID
     created_at: datetime
