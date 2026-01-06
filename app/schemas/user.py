@@ -59,5 +59,4 @@ class UserResponse(UserBase):
     user_key: UUID = Field(description="User UUID key")
     created_at: datetime = Field(description="Creation timestamp")
     status: StatusResponse
-
     model_config = ConfigDict(from_attributes=True)

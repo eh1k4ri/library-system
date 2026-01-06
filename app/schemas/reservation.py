@@ -14,7 +14,6 @@ class ReservationCreate(BaseModel):
 
 class ReservationResponse(BaseModel):
     reservation_key: UUID = Field(description="Reservation UUID key")
-
     reserved_at: datetime = Field(description="Reservation creation timestamp")
     expires_at: Optional[datetime] = Field(None, description="Reservation expiry date")
     completed_at: Optional[datetime] = Field(

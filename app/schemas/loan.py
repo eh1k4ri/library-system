@@ -17,7 +17,6 @@ class LoanResponse(BaseModel):
     loan_key: UUID = Field(description="Loan UUID key")
     start_date: datetime = Field(description="Loan start date")
     due_date: datetime = Field(description="Calculated due date")
-
     return_date: Optional[datetime] = Field(
         None, description="Return timestamp, if returned"
     )
