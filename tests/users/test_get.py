@@ -39,10 +39,10 @@ def test_get_user_pagination(client):
     for i in range(5):
         client.post("/users/", json={"name": f"User {i}", "email": f"user{i}@test.com"})
 
-    response = client.get("/users/?skip=0&limit=2")
+    response = client.get("/users/?page=1&per_page=2")
     assert response.status_code == 200
     assert len(response.json()) <= 2
 
-    response = client.get("/users/?skip=2&limit=2")
+    response = client.get("/users/?page=2&per_page=2")
     assert response.status_code == 200
     assert len(response.json()) <= 2

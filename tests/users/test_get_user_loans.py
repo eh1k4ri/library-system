@@ -21,7 +21,7 @@ def test_get_user_with_loans(client):
     book_key = book_response.json()["book_key"]
 
     loan_response = client.post(
-        "/loans/", json={"user_key": user_key, "book_key": book_key, "days": 14}
+        "/loans/", json={"user_key": user_key, "book_key": book_key}
     )
     assert loan_response.status_code == 201
 
@@ -43,15 +43,13 @@ def test_get_user_loans_pagination(client):
             "/books/", json={"title": f"Book {i}", "author": f"Author {i}"}
         )
         book_key = book_response.json()["book_key"]
-        client.post(
-            "/loans/", json={"user_key": user_key, "book_key": book_key, "days": 14}
-        )
+        client.post("/loans/", json={"user_key": user_key, "book_key": book_key})
 
-    response = client.get(f"/users/{user_key}/loans?skip=0&limit=1")
+    response = client.get(f"/users/{user_key}/loans?page=1&per_page=1")
     assert response.status_code == 200
     assert len(response.json()) == 1
 
-    response = client.get(f"/users/{user_key}/loans?skip=1&limit=1")
+    response = client.get(f"/users/{user_key}/loans?page=2&per_page=1")
     assert response.status_code == 200
     assert len(response.json()) == 1
 

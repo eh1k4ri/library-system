@@ -38,7 +38,7 @@ def test_get_books_pagination(client):
     for i in range(5):
         client.post("/books/", json={"title": f"Book {i}", "author": f"Author {i}"})
 
-    response = client.get("/books/?skip=0&limit=2")
+    response = client.get("/books/?page=1&per_page=2")
     assert response.status_code == 200
     assert len(response.json()) <= 2
 
@@ -82,6 +82,6 @@ def test_get_availability(client):
     assert resp_nf.status_code == 404
     assert resp_nf.json()["detail"] == "Book not found"
 
-    response = client.get("/books/?skip=2&limit=2")
+    response = client.get("/books/?page=2&per_page=2")
     assert response.status_code == 200
     assert len(response.json()) <= 2
