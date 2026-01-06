@@ -9,6 +9,7 @@ logger = get_logger(__name__)
 async def log_requests_middleware(request: Request, call_next):
     start_time = time.time()
     path = request.url.path
+    query_params = request.url.query
     method = request.method
     trace_id = str(uuid.uuid4())
     request.state.trace_id = trace_id
@@ -27,6 +28,7 @@ async def log_requests_middleware(request: Request, call_next):
             details={
                 "path": path,
                 "method": method,
+                "query_params": query_params,
                 "status_code": response.status_code,
                 "duration_ms": round(duration * 1000, 2),
             },
@@ -45,6 +47,7 @@ async def log_requests_middleware(request: Request, call_next):
             details={
                 "path": path,
                 "method": method,
+                "query_params": query_params,
                 "error": str(exc),
                 "duration_ms": round(duration * 1000, 2),
             },

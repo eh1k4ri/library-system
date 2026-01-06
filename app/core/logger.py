@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 
 
-class StructuredFormatter(logging.Formatter):
+class LogFormatter(logging.Formatter):
 
     def format(self, record: logging.LogRecord) -> str:
         data: Dict[str, Any] = {
@@ -51,7 +51,7 @@ def configure_logging(level: str = "INFO") -> None:
 
     console_handler = logging.StreamHandler()
     console_handler.setLevel(level)
-    console_handler.setFormatter(StructuredFormatter())
+    console_handler.setFormatter(LogFormatter())
     root_logger.addHandler(console_handler)
 
     logging.getLogger("sqlalchemy.engine").setLevel("WARNING")
