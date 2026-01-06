@@ -1,10 +1,10 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from app.models.book import Book
 from app.models.book_status import BookStatus
 from app.models.loan import Loan
 from app.models.loan_status import LoanStatus
 from app.schemas.book import BookCreate
-import uuid
+from app.utils.uuid import validate_uuid
 
 
 class BookService:
@@ -12,8 +12,6 @@ class BookService:
         available_status = (
             db.query(BookStatus).filter(BookStatus.enumerator == "available").first()
         )
-        if not available_status:
-            raise ValueError("Critical: Status 'available' missing in DB")
 
         new_book = Book(
             title=book.title, author=book.author, status_id=available_status.id
@@ -24,18 +22,29 @@ class BookService:
         return new_book
 
     def get_all(self, db: Session, skip: int = 0, limit: int = 100):
-        return db.query(Book).offset(skip).limit(limit).all()
+        return (
+            db.query(Book)
+            .options(joinedload(Book.status))
+            .offset(skip)
+            .limit(limit)
+            .all()
+        )
 
     def get_by_key(self, db: Session, book_key: str):
-        try:
-            book_key = uuid.UUID(str(book_key))
-        except Exception:
+        book_key = validate_uuid(book_key)
+        if not book_key:
             return None
 
-        return db.query(Book).filter(Book.book_key == book_key).first()
+        return (
+            db.query(Book)
+            .options(joinedload(Book.status))
+            .filter(Book.book_key == book_key)
+            .first()
+        )
 
     def check_availability(self, db: Session, book_key: str):
         book = self.get_by_key(db, book_key)
+
         if not book:
             return None
 
