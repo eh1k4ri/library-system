@@ -31,7 +31,7 @@ def test_get_book_not_found(client):
     fake_key = "00000000-0000-0000-0000-000000000000"
     response = client.get(f"/books/{fake_key}")
     assert response.status_code == 404
-    assert "Book not found" in response.json()["detail"]
+    assert response.json()["detail"]["code"] == "LBS001"
 
 
 def test_get_books_pagination(client):
@@ -80,7 +80,7 @@ def test_get_availability(client):
     fake_key = "00000000-0000-0000-0000-000000000000"
     resp_nf = client.get(f"/books/{fake_key}/availability")
     assert resp_nf.status_code == 404
-    assert resp_nf.json()["detail"] == "Book not found"
+    assert resp_nf.json()["detail"]["code"] == "LBS001"
 
     response = client.get("/books/?page=2&per_page=2")
     assert response.status_code == 200

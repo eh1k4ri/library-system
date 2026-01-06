@@ -39,7 +39,7 @@ class AppError(HTTPException):
 class BookNotFound(AppError):
     def __init__(self):
         super().__init__(
-            code="LBS0001",
+            code="LBS001",
             title="Book not found",
             description="Requested book was not found",
             translation="Livro não encontrado",
@@ -50,7 +50,7 @@ class BookNotFound(AppError):
 class UserNotFound(AppError):
     def __init__(self):
         super().__init__(
-            code="LBS0002",
+            code="LBS002",
             title="User not found",
             description="Requested user was not found",
             translation="Usuário não encontrado",
@@ -61,7 +61,7 @@ class UserNotFound(AppError):
 class EmailAlreadyRegistered(AppError):
     def __init__(self):
         super().__init__(
-            code="LBS0003",
+            code="LBS003",
             title="Email already registered",
             description="Email address already registered",
             translation="Email já registrado",
@@ -72,7 +72,7 @@ class EmailAlreadyRegistered(AppError):
 class BookNotAvailable(AppError):
     def __init__(self):
         super().__init__(
-            code="LBS0004",
+            code="LBS004",
             title="Book is not available",
             description="Book is currently not available for loan",
             translation="Livro não está disponível",
@@ -83,7 +83,7 @@ class BookNotAvailable(AppError):
 class UserNotActive(AppError):
     def __init__(self):
         super().__init__(
-            code="LBS0005",
+            code="LBS005",
             title="User is not active",
             description="User status is not active",
             translation="Usuário não está ativo",
@@ -94,7 +94,7 @@ class UserNotActive(AppError):
 class MaxActiveLoansReached(AppError):
     def __init__(self):
         super().__init__(
-            code="LBS0006",
+            code="LBS006",
             title="User has reached maximum active loans",
             description="User reached the limit of active loans",
             translation="Usuário atingiu o máximo de empréstimos ativos",
@@ -105,7 +105,7 @@ class MaxActiveLoansReached(AppError):
 class ActiveLoanNotFound(AppError):
     def __init__(self):
         super().__init__(
-            code="LBS0007",
+            code="LBS007",
             title="No active loan found for this book",
             description="No active loan found for this book",
             translation="Nenhum empréstimo ativo encontrado para este livro",
@@ -116,7 +116,7 @@ class ActiveLoanNotFound(AppError):
 class LoanNotFound(AppError):
     def __init__(self):
         super().__init__(
-            code="LBS0008",
+            code="LBS008",
             title="Loan not found",
             description="Requested loan was not found",
             translation="Empréstimo não encontrado",

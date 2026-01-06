@@ -58,4 +58,4 @@ def test_get_user_loans_not_found(client):
     fake_key = "00000000-0000-0000-0000-000000000000"
     response = client.get(f"/users/{fake_key}/loans")
     assert response.status_code == 404
-    assert "User not found" in response.json()["detail"]
+    assert response.json()["detail"]["code"] == "LBS002"

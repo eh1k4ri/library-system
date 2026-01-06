@@ -31,6 +31,7 @@ def test_loan_sucess():
 
     fail_response = client.post("/loans/", json=loan_payload)
     assert fail_response.status_code == 400
+    assert fail_response.json()["detail"]["code"] == "LBS004"
 
     return_payload = {"book_key": book_key}
     return_response = client.post("/loans/return", json=return_payload)
@@ -69,7 +70,7 @@ def test_loan_return_book_not_found(client):
     fake_key = "00000000-0000-0000-0000-000000000000"
     response = client.post("/loans/return", json={"book_key": fake_key})
     assert response.status_code == 404
-    assert "Book not found" in response.json()["detail"]
+    assert response.json()["detail"]["code"] == "LBS001"
 
 
 def test_loan_return_no_active_loan(client):
@@ -80,4 +81,4 @@ def test_loan_return_no_active_loan(client):
 
     response = client.post("/loans/return", json={"book_key": book_key})
     assert response.status_code == 404
-    assert "No active loan found" in response.json()["detail"]
+    assert response.json()["detail"]["code"] == "LBS007"

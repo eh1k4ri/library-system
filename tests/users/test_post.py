@@ -15,7 +15,7 @@ def test_post_user_duplicate_email(client):
 
     response = client.post("/users/", json={"name": "User 2", "email": "dup@test.com"})
     assert response.status_code == 400
-    assert "Email already registered" in response.json()["detail"]
+    assert response.json()["detail"]["code"] == "LBS003"
 
 
 def test_post_user_with_valid_data(client):
