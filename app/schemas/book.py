@@ -44,9 +44,7 @@ class BookUpdate(BaseModel):
 
 class BookAvailabilityResponse(BaseModel):
     available: bool = Field(description="Whether the book is available for loan")
-    status_text: str = Field(
-        description="Current book status enumerator (e.g. 'available')"
-    )
+    status: str = Field(description="Current book status enumerator (e.g. 'available')")
     expected_return_date: Optional[datetime] = Field(
         None, description="Expected return date when book is loaned"
     )
