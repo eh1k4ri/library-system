@@ -16,6 +16,7 @@ from app.core.errors import (
     ActiveLoanNotFound,
 )
 from app.utils.uuid import validate_uuid
+from app.utils.cache import get_cache, set_cache
 
 
 class LoanService:
@@ -58,13 +59,23 @@ class LoanService:
         if user.status.enumerator != "active":
             raise UserNotActive()
 
-        active_loan_status = (
-            db.query(LoanStatus).filter(LoanStatus.enumerator == "active").first()
-        )
+        loan_active_key = "status:loan:active:id"
+        active_loan_status_id = get_cache(loan_active_key)
+        if active_loan_status_id is None:
+            active_loan_status = (
+                db.query(LoanStatus).filter(LoanStatus.enumerator == "active").first()
+            )
+            active_loan_status_id = (
+                active_loan_status.id if active_loan_status else None
+            )
+            if active_loan_status_id is not None:
+                set_cache(loan_active_key, active_loan_status_id, ttl_seconds=300)
+        if active_loan_status_id is None:
+            raise RuntimeError("Loan status 'active' not configured")
 
         active_loans_count = (
             db.query(Loan)
-            .filter(Loan.user_id == user.id, Loan.status_id == active_loan_status.id)
+            .filter(Loan.user_id == user.id, Loan.status_id == active_loan_status_id)
             .count()
         )
         if active_loans_count >= 3:
@@ -77,18 +88,28 @@ class LoanService:
             raise BookNotAvailable()
 
         try:
-            loaned_status = (
-                db.query(BookStatus).filter(BookStatus.enumerator == "loaned").first()
-            )
+            book_loaned_key = "status:book:loaned:id"
+            loaned_status_id = get_cache(book_loaned_key)
+            if loaned_status_id is None:
+                loaned_status = (
+                    db.query(BookStatus)
+                    .filter(BookStatus.enumerator == "loaned")
+                    .first()
+                )
+                loaned_status_id = loaned_status.id if loaned_status else None
+                if loaned_status_id is not None:
+                    set_cache(book_loaned_key, loaned_status_id, ttl_seconds=300)
+            if loaned_status_id is None:
+                raise RuntimeError("Book status 'loaned' not configured")
 
-            book.status_id = loaned_status.id
+            book.status_id = loaned_status_id
             now = datetime.now(timezone.utc)
             due_date = now + timedelta(days=14)
 
             new_loan = Loan(
                 user_id=user.id,
                 book_id=book.id,
-                status_id=active_loan_status.id,
+                status_id=active_loan_status_id,
                 start_date=now,
                 due_date=due_date,
                 fine_amount=0.0,
@@ -99,7 +120,7 @@ class LoanService:
             event = LoanEvent(
                 loan_id=new_loan.id,
                 old_status_id=None,
-                new_status_id=active_loan_status.id,
+                new_status_id=active_loan_status_id,
                 created_at=now,
             )
             db.add(event)
@@ -117,12 +138,20 @@ class LoanService:
         if not book:
             raise BookNotFound()
 
-        active_status = (
-            db.query(LoanStatus).filter(LoanStatus.enumerator == "active").first()
-        )
+        loan_active_key = "status:loan:active:id"
+        active_status_id = get_cache(loan_active_key)
+        if active_status_id is None:
+            active_status = (
+                db.query(LoanStatus).filter(LoanStatus.enumerator == "active").first()
+            )
+            active_status_id = active_status.id if active_status else None
+            if active_status_id is not None:
+                set_cache(loan_active_key, active_status_id, ttl_seconds=300)
+        if active_status_id is None:
+            raise RuntimeError("Loan status 'active' not configured")
         loan = (
             db.query(Loan)
-            .filter(Loan.book_id == book.id, Loan.status_id == active_status.id)
+            .filter(Loan.book_id == book.id, Loan.status_id == active_status_id)
             .first()
         )
 
@@ -141,23 +170,46 @@ class LoanService:
                 days_late = (now - due_date).days + 1
                 fine = days_late * 2.0
 
-            returned_status = (
-                db.query(LoanStatus).filter(LoanStatus.enumerator == "returned").first()
-            )
-            available_book_status = (
-                db.query(BookStatus)
-                .filter(BookStatus.enumerator == "available")
-                .first()
-            )
+            loan_returned_key = "status:loan:returned:id"
+            returned_status_id = get_cache(loan_returned_key)
+            if returned_status_id is None:
+                returned_status = (
+                    db.query(LoanStatus)
+                    .filter(LoanStatus.enumerator == "returned")
+                    .first()
+                )
+                returned_status_id = returned_status.id if returned_status else None
+                if returned_status_id is not None:
+                    set_cache(loan_returned_key, returned_status_id, ttl_seconds=300)
+            if returned_status_id is None:
+                raise RuntimeError("Loan status 'returned' not configured")
+
+            book_available_key = "status:book:available:id"
+            available_book_status_id = get_cache(book_available_key)
+            if available_book_status_id is None:
+                available_book_status = (
+                    db.query(BookStatus)
+                    .filter(BookStatus.enumerator == "available")
+                    .first()
+                )
+                available_book_status_id = (
+                    available_book_status.id if available_book_status else None
+                )
+                if available_book_status_id is not None:
+                    set_cache(
+                        book_available_key, available_book_status_id, ttl_seconds=300
+                    )
+            if available_book_status_id is None:
+                raise RuntimeError("Book status 'available' not configured")
 
             loan.return_date = now
-            loan.status_id = returned_status.id
+            loan.status_id = returned_status_id
             loan.fine_amount = fine
-            book.status_id = available_book_status.id
+            book.status_id = available_book_status_id
             event = LoanEvent(
                 loan_id=loan.id,
-                old_status_id=active_status.id,
-                new_status_id=returned_status.id,
+                old_status_id=active_status_id,
+                new_status_id=returned_status_id,
                 created_at=now,
             )
             db.add(event)
