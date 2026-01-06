@@ -2,8 +2,8 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator, FieldValidat
 from datetime import datetime
 from uuid import UUID
 from typing import Optional
-from .book_status import BookStatusResponse
 from app.utils.text import clean_str, clean_optional_str
+from .status import StatusResponse
 
 
 class BookBase(BaseModel):
@@ -44,16 +44,16 @@ class BookUpdate(BaseModel):
 
 class BookAvailabilityResponse(BaseModel):
     available: bool = Field(description="Whether the book is available for loan")
-    status: str = Field(description="Current book status enumerator")
+    status_text: str = Field(
+        description="Current book status enumerator (e.g. 'available')"
+    )
     expected_return_date: Optional[datetime] = Field(
         None, description="Expected return date when book is loaned"
     )
 
 
 class BookResponse(BookBase):
-    id: int = Field(description="Internal book identifier")
     book_key: UUID = Field(description="Book UUID key")
     created_at: datetime = Field(description="Creation timestamp")
-    status: BookStatusResponse
-
+    status: StatusResponse
     model_config = ConfigDict(from_attributes=True)

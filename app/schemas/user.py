@@ -8,7 +8,8 @@ from pydantic import (
 )
 from datetime import datetime
 from uuid import UUID
-from .user_status import UserStatusResponse
+from typing import Optional
+from .status import StatusResponse
 from app.utils.text import clean_str, normalize_email
 
 
@@ -23,11 +24,8 @@ class UserBase(BaseModel):
 
     @field_validator("email")
     @classmethod
-    def normalize_email_field(
-        cls, value: EmailStr, info: FieldValidationInfo
-    ) -> EmailStr:
-        normalized = normalize_email(str(value), info.field_name)
-        return normalized
+    def normalize_email_field(cls, value: EmailStr, info: FieldValidationInfo) -> str:
+        return normalize_email(str(value), info.field_name)
 
 
 class UserCreate(UserBase):
@@ -35,12 +33,14 @@ class UserCreate(UserBase):
 
 
 class UserUpdate(BaseModel):
-    name: str | None = Field(None, min_length=1, max_length=100)
-    email: EmailStr | None = Field(None)
+    name: Optional[str] = Field(None, min_length=1, max_length=100)
+    email: Optional[EmailStr] = Field(None)
 
     @field_validator("name")
     @classmethod
-    def strip_name(cls, value: str | None, info: FieldValidationInfo) -> str | None:
+    def strip_name(
+        cls, value: Optional[str], info: FieldValidationInfo
+    ) -> Optional[str]:
         if value is None:
             return value
         return clean_str(value, info.field_name)
@@ -48,17 +48,16 @@ class UserUpdate(BaseModel):
     @field_validator("email")
     @classmethod
     def normalize_email_field_optional(
-        cls, value: EmailStr | None, info: FieldValidationInfo
-    ) -> EmailStr | None:
+        cls, value: Optional[EmailStr], info: FieldValidationInfo
+    ) -> Optional[str]:
         if value is None:
             return value
         return normalize_email(str(value), info.field_name)
 
 
 class UserResponse(UserBase):
-    id: int = Field(description="Internal user identifier")
     user_key: UUID = Field(description="User UUID key")
     created_at: datetime = Field(description="Creation timestamp")
-    status: UserStatusResponse
+    status: StatusResponse
 
     model_config = ConfigDict(from_attributes=True)

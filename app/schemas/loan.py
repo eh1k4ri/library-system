@@ -2,10 +2,10 @@ from pydantic import BaseModel, ConfigDict, Field
 from datetime import datetime
 from typing import Optional, List
 from uuid import UUID
+from .status import StatusResponse
+from .loan_event import LoanEventResponse
 from .book import BookResponse
 from .user import UserResponse
-from .loan_status import LoanStatusResponse
-from .loan_event import LoanEventResponse
 
 
 class LoanCreate(BaseModel):
@@ -17,13 +17,16 @@ class LoanResponse(BaseModel):
     loan_key: UUID = Field(description="Loan UUID key")
     start_date: datetime = Field(description="Loan start date")
     due_date: datetime = Field(description="Calculated due date")
+
     return_date: Optional[datetime] = Field(
         None, description="Return timestamp, if returned"
     )
-    fine_amount: float = Field(description="Fine amount calculated on return")
+    fine_amount: float = Field(
+        default=0.0, description="Fine amount calculated on return"
+    )
     user: UserResponse
     book: BookResponse
-    status: LoanStatusResponse
+    status: StatusResponse
     events: List[LoanEventResponse] = Field(default_factory=list)
     model_config = ConfigDict(from_attributes=True)
 

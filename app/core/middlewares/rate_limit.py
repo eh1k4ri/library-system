@@ -30,7 +30,7 @@ async def rate_limit(request: Request, call_next: Callable):
             _last_cleanup = now
 
         if key not in _buckets:
-            _buckets[key] = [now + WINDOW_SECONDS, 0]
+            _buckets[key] = [now + RATE_LIMIT_WINDOW, 0]
 
         reset_at, count = _buckets[key]
 

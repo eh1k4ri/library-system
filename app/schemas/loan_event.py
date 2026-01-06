@@ -1,12 +1,13 @@
-from pydantic import BaseModel, ConfigDict
 from datetime import datetime
 from typing import Optional
-from .loan_status import LoanStatusResponse
+from pydantic import BaseModel, ConfigDict, Field
+from .status import StatusResponse
 
 
 class LoanEventResponse(BaseModel):
-    old_status: Optional[LoanStatusResponse] = None
-    new_status: LoanStatusResponse
-    created_at: datetime
-
+    old_status: Optional[StatusResponse] = Field(
+        default=None, description="Previous loan status, if any"
+    )
+    new_status: StatusResponse = Field(description="Current loan status")
+    created_at: datetime = Field(description="When the status change was recorded")
     model_config = ConfigDict(from_attributes=True)
