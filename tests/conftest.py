@@ -1,5 +1,6 @@
 import os
 import pytest
+import base64
 from sqlalchemy import create_engine
 from sqlalchemy.pool import StaticPool
 from sqlalchemy.orm import sessionmaker
@@ -18,6 +19,12 @@ engine = create_engine(
 )
 
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+AUTH_USERNAME = "admin"
+AUTH_PASSWORD = "password123"
+AUTH_HEADER = {
+    "Authorization": f"Basic {base64.b64encode(f'{AUTH_USERNAME}:{AUTH_PASSWORD}'.encode()).decode()}"
+}
 
 
 @pytest.fixture(name="session")
@@ -53,5 +60,9 @@ def client_fixture(session):
             session.close()
 
     app.dependency_overrides[get_db] = override_get_db
-    yield TestClient(app)
+    client = TestClient(app)
+
+    client.headers.update(AUTH_HEADER)
+
+    yield client
     app.dependency_overrides.clear()
