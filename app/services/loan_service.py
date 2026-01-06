@@ -14,12 +14,17 @@ from app.core.errors import (
     BookNotFound,
     BookNotAvailable,
     ActiveLoanNotFound,
+    LoanNotFound,
+    CannotRenewInactiveLoan,
+    CannotRenewOverdueLoan,
 )
 from app.utils.uuid import validate_uuid
 from app.utils.cache import get_cache, set_cache
 
 
 class LoanService:
+    RENEWAL_EXTENSION_DAYS = 7
+
     def get_loans(self, db: Session, skip: int = 0, limit: int = 100):
         return (
             db.query(Loan)
@@ -214,3 +219,58 @@ class LoanService:
         except Exception as e:
             db.rollback()
             raise e
+
+    def renew_loan(self, db: Session, loan_key: str):
+        loan_key = validate_uuid(loan_key)
+        if not loan_key:
+            raise LoanNotFound()
+
+        loan = (
+            db.query(Loan)
+            .options(
+                joinedload(Loan.user),
+                joinedload(Loan.book),
+                joinedload(Loan.status),
+                joinedload(Loan.events).joinedload(LoanEvent.new_status),
+                joinedload(Loan.events).joinedload(LoanEvent.old_status),
+            )
+            .filter(Loan.loan_key == loan_key)
+            .first()
+        )
+
+        if not loan:
+            raise LoanNotFound()
+
+        active_status = (
+            db.query(LoanStatus).filter(LoanStatus.enumerator == "active").first()
+        )
+
+        if loan.status_id != active_status.id:
+            raise CannotRenewInactiveLoan()
+
+        now = datetime.now(timezone.utc)
+        due_date = loan.due_date
+        if due_date and due_date.tzinfo is None:
+            due_date = due_date.replace(tzinfo=timezone.utc)
+
+        if due_date and due_date <= now:
+            raise CannotRenewOverdueLoan()
+
+        extension = timedelta(days=self.RENEWAL_EXTENSION_DAYS)
+        loan.due_date = (due_date or now) + extension
+
+        event = LoanEvent(
+            loan_id=loan.id,
+            old_status_id=active_status.id,
+            new_status_id=active_status.id,
+            created_at=now,
+        )
+        db.add(event)
+
+        db.commit()
+        db.refresh(loan)
+
+        cache_key = f"loan:{loan_key}:details"
+        set_cache(cache_key, loan, ttl_seconds=60)
+
+        return loan

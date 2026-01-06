@@ -45,3 +45,8 @@ def create_loan(loan_data: LoanCreate, db: Session = Depends(get_db)):
 @router.post("/return", response_model=LoanResponse)
 def return_book(return_data: LoanReturnRequest, db: Session = Depends(get_db)):
     return service.return_book(db=db, return_data=return_data)
+
+
+@router.post("/{loan_key}/renew", response_model=LoanResponse)
+def renew_loan(loan_key: UUID, db: Session = Depends(get_db)):
+    return service.renew_loan(db=db, loan_key=loan_key)

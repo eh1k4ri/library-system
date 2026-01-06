@@ -190,6 +190,28 @@ class CannotCompleteInactiveReservation(CustomError):
         )
 
 
+class CannotRenewInactiveLoan(CustomError):
+    def __init__(self):
+        super().__init__(
+            code="LBS015",
+            title="Cannot renew this loan",
+            description="Only active loans can be renewed",
+            translation="Apenas empréstimos ativos podem ser renovados",
+            http_status=status.HTTP_400_BAD_REQUEST,
+        )
+
+
+class CannotRenewOverdueLoan(CustomError):
+    def __init__(self):
+        super().__init__(
+            code="LBS016",
+            title="Cannot renew overdue loan",
+            description="Overdue loans must be returned before renewal",
+            translation="Empréstimos em atraso devem ser devolvidos antes da renovação",
+            http_status=status.HTTP_400_BAD_REQUEST,
+        )
+
+
 def http_error(
     error: CustomError, *, extra: Optional[Dict[str, Any]] = None
 ) -> CustomError:
