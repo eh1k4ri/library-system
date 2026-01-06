@@ -4,9 +4,11 @@ from threading import Lock
 from fastapi import Request, status
 from starlette.responses import JSONResponse
 
-RATE_LIMIT = 100
-WINDOW_SECONDS = 60
-CLEANUP_INTERVAL = 600
+from app.core.constants import (
+    RATE_LIMIT_REQUESTS,
+    RATE_LIMIT_WINDOW,
+    RATE_LIMIT_CLEANUP_INTERVAL,
+)
 
 _buckets: Dict[str, list] = {}
 _lock = Lock()
@@ -21,7 +23,7 @@ async def rate_limit(request: Request, call_next: Callable):
 
     with _lock:
         global _last_cleanup
-        if now - _last_cleanup > CLEANUP_INTERVAL:
+        if now - _last_cleanup > RATE_LIMIT_CLEANUP_INTERVAL:
             expired_keys = [k for k, v in _buckets.items() if v[0] <= now]
             for k in expired_keys:
                 del _buckets[k]
@@ -33,11 +35,11 @@ async def rate_limit(request: Request, call_next: Callable):
         reset_at, count = _buckets[key]
 
         if reset_at <= now:
-            reset_at = now + WINDOW_SECONDS
+            reset_at = now + RATE_LIMIT_WINDOW
             count = 0
             _buckets[key] = [reset_at, count]
 
-        if count >= RATE_LIMIT:
+        if count >= RATE_LIMIT_REQUESTS:
             retry_after = int(reset_at - now)
             return JSONResponse(
                 status_code=status.HTTP_429_TOO_MANY_REQUESTS,
@@ -61,8 +63,10 @@ async def rate_limit(request: Request, call_next: Callable):
 
     response = await call_next(request)
 
-    response.headers["X-RateLimit-Limit"] = str(RATE_LIMIT)
-    response.headers["X-RateLimit-Remaining"] = str(max(RATE_LIMIT - current_count, 0))
+    response.headers["X-RateLimit-Limit"] = str(RATE_LIMIT_REQUESTS)
+    response.headers["X-RateLimit-Remaining"] = str(
+        max(RATE_LIMIT_REQUESTS - current_count, 0)
+    )
     response.headers["X-RateLimit-Reset"] = str(int(current_reset))
 
     return response

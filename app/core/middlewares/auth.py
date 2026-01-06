@@ -1,44 +1,18 @@
-import os
 import base64
 import secrets
-from fastapi import Request, status
-from starlette.responses import JSONResponse
-
-SECURITY_USER = os.getenv("USER")
-SECURITY_PASS = os.getenv("PASSWORD")
+from fastapi import Request
+from app.core.constants import SECURITY_USER, SECURITY_PASS, PUBLIC_PATHS
+from app.core.errors import MissingCredentials, InvalidCredentials
 
 
 async def basic_auth(request: Request, call_next):
-    public_paths = ["/docs", "/healthcheck", "/openapi.json", "/metrics"]
-
-    if any(request.url.path.startswith(path) for path in public_paths):
+    if any(request.url.path.startswith(path) for path in PUBLIC_PATHS):
         return await call_next(request)
 
     auth_header = request.headers.get("Authorization")
 
-    def unauthorized_response(
-        code: str, title: str, description: str, translation: str
-    ):
-        return JSONResponse(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            content={
-                "detail": {
-                    "code": code,
-                    "title": title,
-                    "description": description,
-                    "translation": translation,
-                }
-            },
-            headers={"WWW-Authenticate": "Basic realm=Library System"},
-        )
-
     if not auth_header:
-        return unauthorized_response(
-            "AUTH_MISSING",
-            "Missing Credentials",
-            "Authorization header is required.",
-            "Cabeçalho de autorização é obrigatório.",
-        )
+        raise MissingCredentials()
 
     try:
         scheme, credentials = auth_header.split(" ")
@@ -55,12 +29,7 @@ async def basic_auth(request: Request, call_next):
             raise ValueError("Invalid credentials")
 
     except Exception:
-        return unauthorized_response(
-            "AUTH_INVALID",
-            "Invalid Credentials",
-            "Invalid username or password.",
-            "Usuário ou senha inválidos.",
-        )
+        raise InvalidCredentials()
 
     response = await call_next(request)
     return response
