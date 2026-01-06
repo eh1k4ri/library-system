@@ -106,7 +106,6 @@ class LoanService:
 
         book = (
             db.query(Book)
-            .options(joinedload(Book.status))
             .filter(Book.book_key == loan_data.book_key)
             .with_for_update()
             .first()
