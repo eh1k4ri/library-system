@@ -29,6 +29,7 @@ class Book(Base):
 
     status = relationship("BookStatus", back_populates="books")
     loans = relationship("Loan", back_populates="book")
+    reservations = relationship("Reservation", back_populates="book")
     book_events = relationship(
         "BookEvent", back_populates="book", cascade="all, delete-orphan"
     )

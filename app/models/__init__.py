@@ -7,3 +7,5 @@ from .book import Book
 from .loan_status import LoanStatus
 from .loan_event import LoanEvent
 from .loan import Loan
+from .reservation_status import ReservationStatus
+from .reservation import Reservation
