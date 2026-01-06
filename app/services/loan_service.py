@@ -1,4 +1,3 @@
-import uuid
 from datetime import datetime, timedelta, timezone
 from sqlalchemy.orm import Session
 from app.models.loan import Loan
@@ -16,6 +15,7 @@ from app.core.errors import (
     BookNotAvailable,
     ActiveLoanNotFound,
 )
+from app.utils.uuid import validate_uuid
 
 
 class LoanService:
@@ -46,9 +46,8 @@ class LoanService:
         return query.offset(skip).limit(limit).all()
 
     def get_loan_by_key(self, db: Session, loan_key: str):
-        try:
-            loan_key = uuid.UUID(str(loan_key))
-        except Exception:
+        loan_key = validate_uuid(loan_key)
+        if not loan_key:
             return None
         return db.query(Loan).filter(Loan.loan_key == loan_key).first()
 
@@ -132,10 +131,9 @@ class LoanService:
 
         try:
             now = datetime.now(timezone.utc)
-
             fine = 0.0
-
             due_date = loan.due_date
+
             if due_date is not None and due_date.tzinfo is None:
                 due_date = due_date.replace(tzinfo=timezone.utc)
 
