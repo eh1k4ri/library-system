@@ -1,4 +1,5 @@
-from sqlalchemy import Column, Integer, ForeignKey, DateTime
+from sqlalchemy import Column, Integer, ForeignKey
+from sqlalchemy.dialects.postgresql import TIMESTAMP
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.db.session import Base
@@ -11,7 +12,9 @@ class BookEvent(Base):
     book_id = Column(Integer, ForeignKey("books.id"), nullable=False)
     old_status_id = Column(Integer, ForeignKey("book_status.id"), nullable=True)
     new_status_id = Column(Integer, ForeignKey("book_status.id"), nullable=False)
-    created_at = Column(DateTime(timezone=True, precision=3), server_default=func.now())
+    created_at = Column(
+        TIMESTAMP(timezone=True, precision=3), server_default=func.now()
+    )
 
     book = relationship("Book", back_populates="book_events")
     old_status = relationship("BookStatus", foreign_keys=[old_status_id])

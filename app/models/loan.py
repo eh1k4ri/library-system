@@ -1,5 +1,6 @@
 import uuid
-from sqlalchemy import Column, Integer, ForeignKey, DateTime, Float
+from sqlalchemy import Column, Integer, ForeignKey, Float
+from sqlalchemy.dialects.postgresql import TIMESTAMP
 from sqlalchemy.types import Uuid as SQLAlchemyUuid
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
@@ -23,14 +24,18 @@ class Loan(Base):
     book_id = Column(Integer, ForeignKey("books.id"), nullable=False)
     status_id = Column(Integer, ForeignKey("loan_status.id"), nullable=False)
 
-    start_date = Column(DateTime(timezone=True, precision=3), server_default=func.now())
-    due_date = Column(DateTime(timezone=True, precision=3), nullable=False)
-    return_date = Column(DateTime(timezone=True, precision=3), nullable=True)
+    start_date = Column(
+        TIMESTAMP(timezone=True, precision=3), server_default=func.now()
+    )
+    due_date = Column(TIMESTAMP(timezone=True, precision=3), nullable=False)
+    return_date = Column(TIMESTAMP(timezone=True, precision=3), nullable=True)
     fine_amount = Column(Float, default=0.0)
 
-    created_at = Column(DateTime(timezone=True, precision=3), server_default=func.now())
+    created_at = Column(
+        TIMESTAMP(timezone=True, precision=3), server_default=func.now()
+    )
     updated_at = Column(
-        DateTime(timezone=True, precision=3),
+        TIMESTAMP(timezone=True, precision=3),
         server_default=func.now(),
         onupdate=func.now(),
     )

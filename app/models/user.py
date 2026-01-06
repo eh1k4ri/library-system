@@ -1,6 +1,7 @@
 import uuid
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.types import Uuid as SQLAlchemyUuid
+from sqlalchemy.dialects.postgresql import TIMESTAMP
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.db.session import Base
@@ -20,7 +21,9 @@ class User(Base):
     name = Column(String, nullable=False)
     email = Column(String, unique=True, index=True, nullable=False)
     status_id = Column(Integer, ForeignKey("user_status.id"), nullable=False)
-    created_at = Column(DateTime(timezone=True, precision=3), server_default=func.now())
+    created_at = Column(
+        TIMESTAMP(timezone=True, precision=3), server_default=func.now()
+    )
 
     loans = relationship("Loan", back_populates="user")
     status = relationship("UserStatus", back_populates="users")

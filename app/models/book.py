@@ -1,5 +1,6 @@
 import uuid
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy.dialects.postgresql import TIMESTAMP
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from sqlalchemy.types import Uuid as SQLAlchemyUuid
@@ -23,7 +24,9 @@ class Book(Base):
     title = Column(String, index=True, nullable=False)
     author = Column(String, nullable=False)
     status_id = Column(Integer, ForeignKey("book_status.id"), nullable=False)
-    created_at = Column(DateTime(timezone=True, precision=3), server_default=func.now())
+    created_at = Column(
+        TIMESTAMP(timezone=True, precision=3), server_default=func.now()
+    )
 
     status = relationship("BookStatus", back_populates="books")
     loans = relationship("Loan", back_populates="book")
