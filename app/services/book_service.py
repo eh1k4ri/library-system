@@ -1,7 +1,10 @@
+from datetime import datetime
+from typing import Optional
 from sqlalchemy import select
 from sqlalchemy.orm import Session, joinedload
 from app.models.book import Book
 from app.models.book_status import BookStatus
+from app.models.book_event import BookEvent
 from app.models.loan import Loan
 from app.models.loan_status import LoanStatus
 from app.schemas.book import BookCreate, BookUpdate
@@ -25,9 +28,13 @@ class BookService:
             status_id=available_status.id,
         )
         session.add(new_book)
+        session.flush()
+
+        self._create_event(session, new_book.id, None, available_status.id)
+
         session.commit()
         session.refresh(new_book)
-        
+
         return new_book
 
     def get_all(
@@ -117,13 +124,32 @@ class BookService:
         if not status:
             return None
 
+        old_status_id = book.status_id
         book.status_id = status.id
+
+        self._create_event(session, book.id, old_status_id, status.id)
+
         session.commit()
         session.refresh(book)
 
         clear_cache(f"book:{book_key}:details")
 
         return book
+
+    def _create_event(
+        self,
+        session: Session,
+        book_id: int,
+        old_status_id: Optional[int],
+        new_status_id: int,
+    ):
+        event = BookEvent(
+            book_id=book_id,
+            old_status_id=old_status_id,
+            new_status_id=new_status_id,
+            created_at=datetime.now(),
+        )
+        session.add(event)
 
     def check_availability(self, session: Session, book_key: str):
         book = self.get_by_key(session, book_key)

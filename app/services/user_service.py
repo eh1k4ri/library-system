@@ -1,7 +1,10 @@
+from datetime import datetime
+from typing import Optional
 from sqlalchemy.orm import Session, joinedload
 from app.models.user import User
 from app.models.loan import Loan
 from app.models.user_status import UserStatus
+from app.models.user_event import UserEvent
 from app.schemas.user import UserCreate, UserUpdate
 from app.core.constants import CACHE_ENTITY_TTL
 from app.core.errors import EmailAlreadyRegistered, UserNotFound
@@ -21,6 +24,10 @@ class UserService:
 
         new_user = User(name=user.name, email=user.email, status_id=active_status.id)
         session.add(new_user)
+        session.flush()
+
+        self._create_event(session, new_user.id, None, active_status.id)
+
         session.commit()
         session.refresh(new_user)
 
@@ -98,13 +105,32 @@ class UserService:
         if not status:
             return None
 
+        old_status_id = user.status_id
         user.status_id = status.id
+
+        self._create_event(session, user.id, old_status_id, status.id)
+
         session.commit()
         session.refresh(user)
 
         clear_cache(f"user:{user_key}:details")
 
         return user
+
+    def _create_event(
+        self,
+        session: Session,
+        user_id: int,
+        old_status_id: Optional[int],
+        new_status_id: int,
+    ):
+        event = UserEvent(
+            user_id=user_id,
+            old_status_id=old_status_id,
+            new_status_id=new_status_id,
+            created_at=datetime.now(),
+        )
+        session.add(event)
 
     def get_user_loans(
         self, session: Session, user_key: str, skip: int = 0, limit: int = 100
