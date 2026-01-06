@@ -7,7 +7,7 @@ from sqlalchemy.orm import sessionmaker
 from fastapi.testclient import TestClient
 from app.db.session import Base, get_db
 from app.main import app
-from app.models import UserStatus, BookStatus, LoanStatus, User, Book, Loan
+from app.models import UserStatus, BookStatus, LoanStatus, ReservationStatus, User, Book, Loan
 
 os.environ.setdefault("DATABASE_URL", "sqlite:///:memory:")
 SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
@@ -41,6 +41,9 @@ def session_fixture():
             BookStatus(enumerator="loaned", translation="Emprestado"),
             LoanStatus(enumerator="active", translation="Ativo"),
             LoanStatus(enumerator="returned", translation="Devolvido"),
+            ReservationStatus(enumerator="active", translation="Ativa"),
+            ReservationStatus(enumerator="cancelled", translation="Cancelada"),
+            ReservationStatus(enumerator="completed", translation="Completada"),
         ]
     )
     db.commit()
