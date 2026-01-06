@@ -35,6 +35,7 @@ class UserCreate(UserBase):
 
 
 class UserResponse(UserBase):
+    id: int = Field(description="Internal user identifier")
     user_key: UUID = Field(description="User UUID key")
     created_at: datetime = Field(description="Creation timestamp")
     status: UserStatusResponse

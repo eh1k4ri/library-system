@@ -7,7 +7,15 @@ from sqlalchemy.orm import sessionmaker
 from fastapi.testclient import TestClient
 from app.db.session import Base, get_db
 from app.main import app
-from app.models import UserStatus, BookStatus, LoanStatus, ReservationStatus, User, Book, Loan
+from app.models import (
+    UserStatus,
+    BookStatus,
+    LoanStatus,
+    ReservationStatus,
+    User,
+    Book,
+    Loan,
+)
 
 os.environ.setdefault("DATABASE_URL", "sqlite:///:memory:")
 SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"

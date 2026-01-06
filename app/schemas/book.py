@@ -45,6 +45,7 @@ class BookAvailabilityResponse(BaseModel):
 
 
 class BookResponse(BookBase):
+    id: int = Field(description="Internal book identifier")
     book_key: UUID = Field(description="Book UUID key")
     created_at: datetime = Field(description="Creation timestamp")
     status: BookStatusResponse

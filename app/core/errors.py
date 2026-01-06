@@ -124,6 +124,72 @@ class LoanNotFound(CustomError):
         )
 
 
+class ReservationNotFound(CustomError):
+    def __init__(self):
+        super().__init__(
+            code="LBS009",
+            title="Reservation not found",
+            description="Requested reservation was not found",
+            translation="Reserva não encontrada",
+            http_status=status.HTTP_404_NOT_FOUND,
+        )
+
+
+class CannotReserveAvailableBook(CustomError):
+    def __init__(self):
+        super().__init__(
+            code="LBS010",
+            title="Cannot reserve available book",
+            description="Cannot reserve an available book, borrow it directly instead",
+            translation="Não é possível reservar um livro disponível, pegue emprestado diretamente",
+            http_status=status.HTTP_400_BAD_REQUEST,
+        )
+
+
+class DuplicateActiveReservation(CustomError):
+    def __init__(self):
+        super().__init__(
+            code="LBS011",
+            title="User already has active reservation for this book",
+            description="User already has an active reservation for this book",
+            translation="Usuário já possui uma reserva ativa para este livro",
+            http_status=status.HTTP_400_BAD_REQUEST,
+        )
+
+
+class ReservationAlreadyCancelled(CustomError):
+    def __init__(self):
+        super().__init__(
+            code="LBS012",
+            title="Reservation is already cancelled",
+            description="This reservation has already been cancelled",
+            translation="Esta reserva já foi cancelada",
+            http_status=status.HTTP_400_BAD_REQUEST,
+        )
+
+
+class CannotCancelCompletedReservation(CustomError):
+    def __init__(self):
+        super().__init__(
+            code="LBS013",
+            title="Cannot cancel completed reservation",
+            description="Cannot cancel a reservation that has already been completed",
+            translation="Não é possível cancelar uma reserva já completada",
+            http_status=status.HTTP_400_BAD_REQUEST,
+        )
+
+
+class CannotCompleteInactiveReservation(CustomError):
+    def __init__(self):
+        super().__init__(
+            code="LBS014",
+            title="Can only complete active reservations",
+            description="Only active reservations can be completed",
+            translation="Apenas reservas ativas podem ser completadas",
+            http_status=status.HTTP_400_BAD_REQUEST,
+        )
+
+
 def http_error(
     error: CustomError, *, extra: Optional[Dict[str, Any]] = None
 ) -> CustomError:

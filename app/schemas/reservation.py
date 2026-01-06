@@ -19,8 +19,12 @@ class ReservationResponse(BaseModel):
     completed_at: Optional[datetime] = Field(
         None, description="When the reservation was completed"
     )
-    user: UserResponse = Field(description="User who made the reservation")
-    book: BookResponse = Field(description="Reserved book")
-    status: ReservationStatusResponse = Field(description="Reservation status")
+    user_id: int = Field(description="Internal user identifier")
+    user_key: UUID = Field(description="User UUID key")
+    user_name: str = Field(description="Name of the user")
+    book_id: int = Field(description="Internal book identifier")
+    book_key: UUID = Field(description="Book UUID key")
+    book_title: str = Field(description="Title of the reserved book")
+    status_name: str = Field(description="Reservation status enumerator")
 
     model_config = ConfigDict(from_attributes=True)

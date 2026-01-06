@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.api.routers import users, books, healthcheck, loans
+from app.api.routers import users, books, healthcheck, loans, reservations
 from app.core.logger import configure_logging
 from app.core.middlewares import log_requests, rate_limit, basic_auth
 
@@ -17,3 +17,4 @@ app.include_router(healthcheck.router, prefix="", tags=["System"])
 app.include_router(users.router, prefix="/users", tags=["Users"])
 app.include_router(books.router, prefix="/books", tags=["Books"])
 app.include_router(loans.router, prefix="/loans", tags=["Loans"])
+app.include_router(reservations.router, prefix="/reservations", tags=["Reservations"])
