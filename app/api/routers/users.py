@@ -23,6 +23,8 @@ def update_user(
     user_key: UUID, payload: UserUpdate, session: Session = Depends(get_session)
 ):
     updated = service.update(session=session, user_key=str(user_key), data=payload)
+    if not updated:
+        raise UserNotFound()
     return updated
 
 
@@ -30,13 +32,14 @@ def update_user(
 def change_user_status(
     user_key: UUID, status_enum: str, session: Session = Depends(get_session)
 ):
-    try:
-        updated = service.set_status(
-            session=session, user_key=str(user_key), status_enum=status_enum
+    updated = service.set_status(
+        session=session, user_key=str(user_key), status_enum=status_enum
+    )
+    if not updated:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid status"
         )
-        return updated
-    except ValueError as exc:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
+    return updated
 
 
 @router.get("/", response_model=List[UserResponse])
