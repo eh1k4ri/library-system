@@ -3,9 +3,10 @@ from app.models.user import User
 from app.models.loan import Loan
 from app.models.user_status import UserStatus
 from app.schemas.user import UserCreate, UserUpdate
+from app.core.constants import CACHE_ENTITY_TTL
 from app.core.errors import EmailAlreadyRegistered, UserNotFound
 from app.utils.uuid import validate_uuid
-from app.utils.cache import get_cache, set_cache
+from app.utils.cache import get_cache, set_cache, clear_cache
 
 
 class UserService:
@@ -22,6 +23,7 @@ class UserService:
         session.add(new_user)
         session.commit()
         session.refresh(new_user)
+
         return new_user
 
     def get_all(self, session: Session, skip: int = 0, limit: int = 100):
@@ -39,9 +41,9 @@ class UserService:
             return None
 
         cache_key = f"user:{user_key}:details"
-        cached_data = get_cache(cache_key)
-        if cached_data:
-            return cached_data
+        cached_user = get_cache(cache_key)
+        if cached_user:
+            return cached_user
 
         user = (
             session.query(User)
@@ -51,34 +53,42 @@ class UserService:
         )
 
         if user:
-            set_cache(cache_key, user, ttl_seconds=60)
+            set_cache(cache_key, user, ttl_seconds=CACHE_ENTITY_TTL)
 
         return user
 
-    def update(self, session: Session, user_key: str, data: UserUpdate):
-        user = self.get_by_key(session, user_key)
-        if not user:
-            raise UserNotFound()
+    def _get_for_update(self, session: Session, user_key: str) -> User | None:
+        uuid = validate_uuid(user_key)
+        if not uuid:
+            return None
 
-        if data.email and data.email != user.email:
-            existing = session.query(User).filter(User.email == data.email).first()
-            if existing and existing.id != user.id:
-                raise EmailAlreadyRegistered()
+        return session.query(User).filter(User.user_key == uuid).first()
+
+    def update(self, session: Session, user_key: str, data: UserUpdate):
+        user = self._get_for_update(session, user_key)
+
+        if not user:
+            return None
 
         if data.name is not None:
             user.name = data.name
         if data.email is not None:
+            existing = session.query(User).filter(User.email == data.email).first()
+            if existing and existing.id != user.id:
+                raise EmailAlreadyRegistered()
             user.email = data.email
 
         session.commit()
         session.refresh(user)
-        set_cache(f"user:{user_key}:details", user, ttl_seconds=60)
+
+        set_cache(f"user:{user_key}:details", user, ttl_seconds=CACHE_ENTITY_TTL)
+
         return user
 
     def set_status(self, session: Session, user_key: str, status_enum: str):
-        user = self.get_by_key(session, user_key)
+        user = self._get_for_update(session, user_key)
         if not user:
-            raise UserNotFound()
+            return None
 
         status = (
             session.query(UserStatus)
@@ -86,12 +96,14 @@ class UserService:
             .first()
         )
         if not status:
-            raise ValueError(f"Invalid status: {status_enum}")
+            return None
 
         user.status_id = status.id
         session.commit()
         session.refresh(user)
-        set_cache(f"user:{user_key}:details", user, ttl_seconds=60)
+
+        clear_cache(f"user:{user_key}:details")
+
         return user
 
     def get_user_loans(
