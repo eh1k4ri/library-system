@@ -25,19 +25,11 @@ class ReservationService:
     RESERVATION_EXPIRY_DAYS = 7
 
     def create_reservation(self, db: Session, reservation_data: ReservationCreate):
-        user = (
-            db.query(User)
-            .filter(User.user_key == reservation_data.user_key)
-            .first()
-        )
+        user = db.query(User).filter(User.user_key == reservation_data.user_key).first()
         if not user:
             raise UserNotFound()
 
-        book = (
-            db.query(Book)
-            .filter(Book.book_key == reservation_data.book_key)
-            .first()
-        )
+        book = db.query(Book).filter(Book.book_key == reservation_data.book_key).first()
         if not book:
             raise BookNotFound()
 
@@ -78,9 +70,7 @@ class ReservationService:
         db.commit()
         db.refresh(new_reservation)
 
-        full_reservation = self._get_with_relations(
-            db, new_reservation.reservation_key
-        )
+        full_reservation = self._get_with_relations(db, new_reservation.reservation_key)
         serialized = self._serialize(full_reservation)
         cache_key = f"reservation:{full_reservation.reservation_key}:details"
         set_cache(cache_key, serialized, ttl_seconds=60)
@@ -233,5 +223,7 @@ class ReservationService:
             "book_id": reservation.book_id,
             "book_key": reservation.book.book_key if reservation.book else None,
             "book_title": reservation.book.title if reservation.book else None,
-            "status_name": reservation.status.enumerator if reservation.status else None,
+            "status_name": (
+                reservation.status.enumerator if reservation.status else None
+            ),
         }
