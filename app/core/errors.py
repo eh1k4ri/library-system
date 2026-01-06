@@ -2,7 +2,7 @@ from typing import Any, Dict, Optional
 from fastapi import HTTPException, status
 
 
-class AppError(HTTPException):
+class CustomError(HTTPException):
     code: str
     title: str
     description: str
@@ -36,7 +36,7 @@ class AppError(HTTPException):
         self.http_status = http_status
 
 
-class BookNotFound(AppError):
+class BookNotFound(CustomError):
     def __init__(self):
         super().__init__(
             code="LBS001",
@@ -47,7 +47,7 @@ class BookNotFound(AppError):
         )
 
 
-class UserNotFound(AppError):
+class UserNotFound(CustomError):
     def __init__(self):
         super().__init__(
             code="LBS002",
@@ -58,7 +58,7 @@ class UserNotFound(AppError):
         )
 
 
-class EmailAlreadyRegistered(AppError):
+class EmailAlreadyRegistered(CustomError):
     def __init__(self):
         super().__init__(
             code="LBS003",
@@ -69,7 +69,7 @@ class EmailAlreadyRegistered(AppError):
         )
 
 
-class BookNotAvailable(AppError):
+class BookNotAvailable(CustomError):
     def __init__(self):
         super().__init__(
             code="LBS004",
@@ -80,7 +80,7 @@ class BookNotAvailable(AppError):
         )
 
 
-class UserNotActive(AppError):
+class UserNotActive(CustomError):
     def __init__(self):
         super().__init__(
             code="LBS005",
@@ -91,7 +91,7 @@ class UserNotActive(AppError):
         )
 
 
-class MaxActiveLoansReached(AppError):
+class MaxActiveLoansReached(CustomError):
     def __init__(self):
         super().__init__(
             code="LBS006",
@@ -102,7 +102,7 @@ class MaxActiveLoansReached(AppError):
         )
 
 
-class ActiveLoanNotFound(AppError):
+class ActiveLoanNotFound(CustomError):
     def __init__(self):
         super().__init__(
             code="LBS007",
@@ -113,7 +113,7 @@ class ActiveLoanNotFound(AppError):
         )
 
 
-class LoanNotFound(AppError):
+class LoanNotFound(CustomError):
     def __init__(self):
         super().__init__(
             code="LBS008",
@@ -124,9 +124,11 @@ class LoanNotFound(AppError):
         )
 
 
-def http_error(error: AppError, *, extra: Optional[Dict[str, Any]] = None) -> AppError:
+def http_error(
+    error: CustomError, *, extra: Optional[Dict[str, Any]] = None
+) -> CustomError:
     if extra:
-        return AppError(
+        return CustomError(
             code=error.code,
             title=error.title,
             description=error.description,
