@@ -5,6 +5,7 @@ from app.models.loan import Loan
 from app.models.loan_status import LoanStatus
 from app.schemas.book import BookCreate
 from app.utils.uuid import validate_uuid
+from app.utils.cache import get_cache, set_cache
 
 
 class BookService:
@@ -20,7 +21,7 @@ class BookService:
         db.commit()
         db.refresh(new_book)
         return new_book
-
+    
     def get_all(self, db: Session, skip: int = 0, limit: int = 100):
         return (
             db.query(Book)
@@ -35,12 +36,22 @@ class BookService:
         if not book_key:
             return None
 
-        return (
+        cache_key = f"book:{book_key}:details"
+        cached_book = get_cache(cache_key)
+        if cached_book:
+            return cached_book
+
+        book = (
             db.query(Book)
             .options(joinedload(Book.status))
             .filter(Book.book_key == book_key)
             .first()
         )
+
+        if book:
+            set_cache(cache_key, book, ttl_seconds=60)
+
+        return book
 
     def check_availability(self, db: Session, book_key: str):
         book = self.get_by_key(db, book_key)
