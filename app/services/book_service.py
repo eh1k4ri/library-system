@@ -24,7 +24,7 @@ class BookService:
         db.commit()
         db.refresh(new_book)
         return new_book
-    
+
     def get_all(
         self,
         db: Session,
