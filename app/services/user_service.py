@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session, joinedload
 from app.models.user import User
 from app.models.loan import Loan
 from app.models.user_status import UserStatus
-from app.schemas.user import UserCreate
+from app.schemas.user import UserCreate, UserUpdate
 from app.core.errors import EmailAlreadyRegistered, UserNotFound
 from app.utils.uuid import validate_uuid
 from app.utils.cache import get_cache, set_cache
@@ -53,6 +53,43 @@ class UserService:
         if user:
             set_cache(cache_key, user, ttl_seconds=60)
 
+        return user
+
+    def update(self, db: Session, user_key: str, data: UserUpdate):
+        user = self.get_by_key(db, user_key)
+        if not user:
+            raise UserNotFound()
+
+        if data.email and data.email != user.email:
+            existing = db.query(User).filter(User.email == data.email).first()
+            if existing and existing.id != user.id:
+                raise EmailAlreadyRegistered()
+
+        if data.name is not None:
+            user.name = data.name
+        if data.email is not None:
+            user.email = data.email
+
+        db.commit()
+        db.refresh(user)
+        set_cache(f"user:{user_key}:data", user, ttl_seconds=60)
+        return user
+
+    def set_status(self, db: Session, user_key: str, status_enum: str):
+        user = self.get_by_key(db, user_key)
+        if not user:
+            raise UserNotFound()
+
+        status_obj = (
+            db.query(UserStatus).filter(UserStatus.enumerator == status_enum).first()
+        )
+        if not status_obj:
+            raise UserNotFound()
+
+        user.status_id = status_obj.id
+        db.commit()
+        db.refresh(user)
+        set_cache(f"user:{user_key}:data", user, ttl_seconds=60)
         return user
 
     def get_user_loans(

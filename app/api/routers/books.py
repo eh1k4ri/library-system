@@ -1,8 +1,13 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
 from app.db.session import get_db
-from app.schemas.book import BookCreate, BookResponse, BookAvailabilityResponse
+from app.schemas.book import (
+    BookCreate,
+    BookResponse,
+    BookAvailabilityResponse,
+    BookUpdate,
+)
 from app.services.book_service import BookService
 from app.api.deps import PaginationParams
 from app.core.errors import BookNotFound
@@ -14,6 +19,24 @@ service = BookService()
 @router.post("/", response_model=BookResponse, status_code=status.HTTP_201_CREATED)
 def create_book(book: BookCreate, db: Session = Depends(get_db)):
     return service.create(db=db, book=book)
+
+
+@router.patch("/{book_key}", response_model=BookResponse)
+def update_book(book_key: str, payload: BookUpdate, db: Session = Depends(get_db)):
+    updated = service.update(db=db, book_key=book_key, data=payload)
+    if not updated:
+        raise BookNotFound()
+    return updated
+
+
+@router.post("/{book_key}/status", response_model=BookResponse)
+def change_book_status(book_key: str, status_enum: str, db: Session = Depends(get_db)):
+    updated = service.set_status(db=db, book_key=book_key, status_enum=status_enum)
+    if not updated:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid status"
+        )
+    return updated
 
 
 @router.get("/", response_model=List[BookResponse])

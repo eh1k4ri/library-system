@@ -1,9 +1,9 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
 from uuid import UUID
 from app.db.session import get_db
-from app.schemas.user import UserCreate, UserResponse
+from app.schemas.user import UserCreate, UserResponse, UserUpdate
 from app.schemas.loan import LoanResponse
 from app.services.user_service import UserService
 from app.api.deps import PaginationParams
@@ -16,6 +16,22 @@ service = UserService()
 @router.post("/", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 def create_user(user: UserCreate, db: Session = Depends(get_db)):
     return service.create(db=db, user=user)
+
+
+@router.patch("/{user_key}", response_model=UserResponse)
+def update_user(user_key: UUID, payload: UserUpdate, db: Session = Depends(get_db)):
+    updated = service.update(db=db, user_key=str(user_key), data=payload)
+    return updated
+
+
+@router.post("/{user_key}/status", response_model=UserResponse)
+def change_user_status(user_key: UUID, status_enum: str, db: Session = Depends(get_db)):
+    updated = service.set_status(db=db, user_key=str(user_key), status_enum=status_enum)
+    if not updated:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid status"
+        )
+    return updated
 
 
 @router.get("/", response_model=List[UserResponse])

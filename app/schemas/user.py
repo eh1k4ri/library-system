@@ -34,6 +34,27 @@ class UserCreate(UserBase):
     pass
 
 
+class UserUpdate(BaseModel):
+    name: str | None = Field(None, min_length=1, max_length=100)
+    email: EmailStr | None = Field(None)
+
+    @field_validator("name")
+    @classmethod
+    def strip_name(cls, value: str | None, info: FieldValidationInfo) -> str | None:
+        if value is None:
+            return value
+        return clean_str(value, info.field_name)
+
+    @field_validator("email")
+    @classmethod
+    def normalize_email_field_optional(
+        cls, value: EmailStr | None, info: FieldValidationInfo
+    ) -> EmailStr | None:
+        if value is None:
+            return value
+        return normalize_email(str(value), info.field_name)
+
+
 class UserResponse(UserBase):
     id: int = Field(description="Internal user identifier")
     user_key: UUID = Field(description="User UUID key")

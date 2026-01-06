@@ -3,7 +3,7 @@ from app.models.book import Book
 from app.models.book_status import BookStatus
 from app.models.loan import Loan
 from app.models.loan_status import LoanStatus
-from app.schemas.book import BookCreate
+from app.schemas.book import BookCreate, BookUpdate
 from app.utils.uuid import validate_uuid
 from app.utils.cache import get_cache, set_cache
 
@@ -69,6 +69,40 @@ class BookService:
         if book:
             set_cache(cache_key, book, ttl_seconds=60)
 
+        return book
+
+    def update(self, db: Session, book_key: str, data: BookUpdate):
+        book = self.get_by_key(db, book_key)
+        if not book:
+            return None
+
+        if data.title is not None:
+            book.title = data.title
+        if data.author is not None:
+            book.author = data.author
+        if data.genre is not None:
+            book.genre = data.genre
+
+        db.commit()
+        db.refresh(book)
+        set_cache(f"book:{book_key}:details", book, ttl_seconds=60)
+        return book
+
+    def set_status(self, db: Session, book_key: str, status_enum: str):
+        book = self.get_by_key(db, book_key)
+        if not book:
+            return None
+
+        status_obj = (
+            db.query(BookStatus).filter(BookStatus.enumerator == status_enum).first()
+        )
+        if not status_obj:
+            return None
+
+        book.status_id = status_obj.id
+        db.commit()
+        db.refresh(book)
+        set_cache(f"book:{book_key}:details", book, ttl_seconds=60)
         return book
 
     def check_availability(self, db: Session, book_key: str):
