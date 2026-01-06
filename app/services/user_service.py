@@ -84,7 +84,7 @@ class UserService:
             db.query(UserStatus).filter(UserStatus.enumerator == status_enum).first()
         )
         if not status_obj:
-            raise UserNotFound()
+            raise ValueError(f"Invalid status: {status_enum}")
 
         user.status_id = status_obj.id
         db.commit()

@@ -19,7 +19,7 @@ def test_update_user_conflict_email(client):
 
     upd = client.patch(f"/users/{user_key_b}", json={"email": "a@test.com"})
     assert upd.status_code == 400
-    assert upd.json()["detail"]["code"] == "LBS001"
+    assert upd.json()["detail"]["code"] == "LBS003"
 
 
 def test_change_user_status(client):
