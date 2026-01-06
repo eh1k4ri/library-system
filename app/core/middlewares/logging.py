@@ -6,7 +6,7 @@ from app.core.logger import get_logger, log_operation
 logger = get_logger(__name__)
 
 
-async def log_requests_middleware(request: Request, call_next):
+async def log_requests(request: Request, call_next):
     start_time = time.time()
     path = request.url.path
     query_params = request.url.query

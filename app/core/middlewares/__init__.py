@@ -1,1 +1,2 @@
-from .logging import log_requests_middleware
+from .logging import log_requests
+from .rate_limit import rate_limit
