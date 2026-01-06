@@ -4,7 +4,6 @@ from sqlalchemy.dialects.postgresql import TIMESTAMP
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from sqlalchemy.types import Uuid as SQLAlchemyUuid
-
 from app.db.session import Base
 
 
