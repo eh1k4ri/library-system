@@ -31,3 +31,4 @@ class Reservation(Base):
     user = relationship("User", back_populates="reservations")
     book = relationship("Book", back_populates="reservations")
     status = relationship("ReservationStatus")
+    events = relationship("ReservationEvent", back_populates="reservation")
