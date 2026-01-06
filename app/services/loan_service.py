@@ -7,6 +7,7 @@ from app.models.book_status import BookStatus
 from app.models.loan_status import LoanStatus
 from app.models.loan_event import LoanEvent
 from app.schemas.loan import LoanCreate, LoanReturnRequest
+from app.services.notification_service import notification_service
 from app.core.errors import (
     UserNotFound,
     UserNotActive,
@@ -152,6 +153,16 @@ class LoanService:
 
             db.commit()
             db.refresh(new_loan)
+
+            try:
+                notification_service.notify_due_date(
+                    user_email=user.email,
+                    loan_key=str(new_loan.loan_key),
+                    book_title=book.title,
+                    due_date=due_date,
+                )
+            except Exception:
+                pass
             return new_loan
 
         except Exception as e:
