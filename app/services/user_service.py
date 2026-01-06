@@ -9,42 +9,42 @@ from app.utils.cache import get_cache, set_cache
 
 
 class UserService:
-    def create(self, db: Session, user: UserCreate):
-        existing_user = db.query(User).filter(User.email == user.email).first()
+    def create(self, session: Session, user: UserCreate):
+        existing_user = session.query(User).filter(User.email == user.email).first()
         if existing_user:
             raise EmailAlreadyRegistered()
 
         active_status = (
-            db.query(UserStatus).filter(UserStatus.enumerator == "active").first()
+            session.query(UserStatus).filter(UserStatus.enumerator == "active").first()
         )
 
         new_user = User(name=user.name, email=user.email, status_id=active_status.id)
-        db.add(new_user)
-        db.commit()
-        db.refresh(new_user)
+        session.add(new_user)
+        session.commit()
+        session.refresh(new_user)
         return new_user
 
-    def get_all(self, db: Session, skip: int = 0, limit: int = 100):
+    def get_all(self, session: Session, skip: int = 0, limit: int = 100):
         return (
-            db.query(User)
+            session.query(User)
             .options(joinedload(User.status))
             .offset(skip)
             .limit(limit)
             .all()
         )
 
-    def get_by_key(self, db: Session, user_key: str):
+    def get_by_key(self, session: Session, user_key: str):
         user_key = validate_uuid(user_key)
         if not user_key:
             return None
 
-        cache_key = f"user:{user_key}:data"
+        cache_key = f"user:{user_key}:details"
         cached_data = get_cache(cache_key)
         if cached_data:
             return cached_data
 
         user = (
-            db.query(User)
+            session.query(User)
             .options(joinedload(User.status))
             .filter(User.user_key == user_key)
             .first()
@@ -55,13 +55,13 @@ class UserService:
 
         return user
 
-    def update(self, db: Session, user_key: str, data: UserUpdate):
-        user = self.get_by_key(db, user_key)
+    def update(self, session: Session, user_key: str, data: UserUpdate):
+        user = self.get_by_key(session, user_key)
         if not user:
             raise UserNotFound()
 
         if data.email and data.email != user.email:
-            existing = db.query(User).filter(User.email == data.email).first()
+            existing = session.query(User).filter(User.email == data.email).first()
             if existing and existing.id != user.id:
                 raise EmailAlreadyRegistered()
 
@@ -70,38 +70,40 @@ class UserService:
         if data.email is not None:
             user.email = data.email
 
-        db.commit()
-        db.refresh(user)
-        set_cache(f"user:{user_key}:data", user, ttl_seconds=60)
+        session.commit()
+        session.refresh(user)
+        set_cache(f"user:{user_key}:details", user, ttl_seconds=60)
         return user
 
-    def set_status(self, db: Session, user_key: str, status_enum: str):
-        user = self.get_by_key(db, user_key)
+    def set_status(self, session: Session, user_key: str, status_enum: str):
+        user = self.get_by_key(session, user_key)
         if not user:
             raise UserNotFound()
 
-        status_obj = (
-            db.query(UserStatus).filter(UserStatus.enumerator == status_enum).first()
+        status = (
+            session.query(UserStatus)
+            .filter(UserStatus.enumerator == status_enum)
+            .first()
         )
-        if not status_obj:
+        if not status:
             raise ValueError(f"Invalid status: {status_enum}")
 
-        user.status_id = status_obj.id
-        db.commit()
-        db.refresh(user)
-        set_cache(f"user:{user_key}:data", user, ttl_seconds=60)
+        user.status_id = status.id
+        session.commit()
+        session.refresh(user)
+        set_cache(f"user:{user_key}:details", user, ttl_seconds=60)
         return user
 
     def get_user_loans(
-        self, db: Session, user_key: str, skip: int = 0, limit: int = 100
+        self, session: Session, user_key: str, skip: int = 0, limit: int = 100
     ):
-        user = self.get_by_key(db, user_key)
+        user = self.get_by_key(session, user_key)
 
         if not user:
             raise UserNotFound()
 
         return (
-            db.query(Loan)
+            session.query(Loan)
             .options(joinedload(Loan.book), joinedload(Loan.status))
             .filter(Loan.user_id == user.id)
             .offset(skip)
