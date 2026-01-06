@@ -2,7 +2,7 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 from uuid import UUID
-from app.db.session import get_db
+from app.db.session import get_session
 from app.schemas.reservation import ReservationCreate, ReservationResponse
 from app.services.reservation_service import ReservationService
 from app.core.errors import ReservationNotFound
@@ -16,9 +16,9 @@ service = ReservationService()
 )
 def create_reservation(
     reservation: ReservationCreate,
-    db: Session = Depends(get_db),
+    session: Session = Depends(get_session),
 ):
-    return service.create_reservation(db, reservation)
+    return service.create_reservation(session, reservation)
 
 
 @router.get("/", response_model=List[ReservationResponse])
@@ -28,10 +28,10 @@ def get_reservations(
     status: Optional[str] = None,
     skip: int = 0,
     limit: int = 100,
-    db: Session = Depends(get_db),
+    session: Session = Depends(get_session),
 ):
     return service.get_reservations(
-        db,
+        session,
         skip=skip,
         limit=limit,
         user_key=user_key,
@@ -41,8 +41,8 @@ def get_reservations(
 
 
 @router.get("/{reservation_key}", response_model=ReservationResponse)
-def get_reservation(reservation_key: UUID, db: Session = Depends(get_db)):
-    reservation = service.get_reservation_by_key(db, reservation_key)
+def get_reservation(reservation_key: UUID, session: Session = Depends(get_session)):
+    reservation = service.get_reservation_by_key(session, reservation_key)
     if reservation is None:
         raise ReservationNotFound()
     return reservation
@@ -51,14 +51,14 @@ def get_reservation(reservation_key: UUID, db: Session = Depends(get_db)):
 @router.delete("/{reservation_key}", response_model=ReservationResponse)
 def cancel_reservation(
     reservation_key: UUID,
-    db: Session = Depends(get_db),
+    session: Session = Depends(get_session),
 ):
-    return service.cancel_reservation(db, reservation_key)
+    return service.cancel_reservation(session, reservation_key)
 
 
 @router.post("/{reservation_key}/complete", response_model=ReservationResponse)
 def complete_reservation(
     reservation_key: UUID,
-    db: Session = Depends(get_db),
+    session: Session = Depends(get_session),
 ):
-    return service.complete_reservation(db, reservation_key)
+    return service.complete_reservation(session, reservation_key)

@@ -1,7 +1,7 @@
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy.orm import Session
-from app.db.session import get_db
+from app.db.session import get_session
 from app.services.report_service import ReportService
 from app.api.deps import PaginationParams
 
@@ -15,11 +15,11 @@ def export_loans(
     status_filter: Optional[str] = None,
     overdue: bool = False,
     pagination: PaginationParams = Depends(),
-    db: Session = Depends(get_db),
+    session: Session = Depends(get_session),
 ):
     try:
         content, media_type, filename = report_service.export_loans(
-            db=db,
+            session=session,
             skip=pagination.skip,
             limit=pagination.per_page,
             status_filter=status_filter,
@@ -37,11 +37,11 @@ def export_loans(
 def export_users(
     format: str = "csv",
     pagination: PaginationParams = Depends(),
-    db: Session = Depends(get_db),
+    session: Session = Depends(get_session),
 ):
     try:
         content, media_type, filename = report_service.export_users(
-            db=db,
+            session=session,
             skip=pagination.skip,
             limit=pagination.per_page,
             fmt=format,
@@ -58,11 +58,11 @@ def export_books(
     format: str = "csv",
     genre: Optional[str] = None,
     pagination: PaginationParams = Depends(),
-    db: Session = Depends(get_db),
+    session: Session = Depends(get_session),
 ):
     try:
         content, media_type, filename = report_service.export_books(
-            db=db,
+            session=session,
             skip=pagination.skip,
             limit=pagination.per_page,
             genre=genre,
@@ -82,11 +82,11 @@ def export_reservations(
     book_key: Optional[str] = None,
     status_filter: Optional[str] = None,
     pagination: PaginationParams = Depends(),
-    db: Session = Depends(get_db),
+    session: Session = Depends(get_session),
 ):
     try:
         content, media_type, filename = report_service.export_reservations(
-            db=db,
+            session=session,
             skip=pagination.skip,
             limit=pagination.per_page,
             user_key=user_key,

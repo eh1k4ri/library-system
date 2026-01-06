@@ -7,9 +7,13 @@ class HealthcheckService:
         try:
             db.execute(text("SELECT 1"))
             return {
-                "status": "healthy",
+                "status": "available",
                 "database": "connected",
-                "message": "System is running smoothly",
+                "message": "System is running",
             }
         except Exception as e:
-            return {"status": "unhealthy", "database": "disconnected", "error": str(e)}
+            return {
+                "status": "unavailable",
+                "database": "disconnected",
+                "error": str(e),
+            }

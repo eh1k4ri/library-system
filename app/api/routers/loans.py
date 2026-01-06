@@ -2,7 +2,7 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 from uuid import UUID
-from app.db.session import get_db
+from app.db.session import get_session
 from app.services.loan_service import LoanService
 from app.schemas.loan import LoanCreate, LoanResponse, LoanReturnRequest
 from app.api.deps import PaginationParams
@@ -17,10 +17,10 @@ def get_loans(
     status: Optional[str] = None,
     overdue: bool = False,
     pagination: PaginationParams = Depends(),
-    db: Session = Depends(get_db),
+    session: Session = Depends(get_session),
 ):
     loans = service.get_loans_filtered(
-        db,
+        session,
         skip=pagination.skip,
         limit=pagination.per_page,
         status=status,
@@ -30,23 +30,25 @@ def get_loans(
 
 
 @router.get("/{loan_key}", response_model=LoanResponse)
-def get_loan(loan_key: UUID, db: Session = Depends(get_db)):
-    loan = service.get_loan_by_key(db, loan_key=loan_key)
+def get_loan(loan_key: UUID, session: Session = Depends(get_session)):
+    loan = service.get_loan_by_key(session, loan_key=loan_key)
     if loan is None:
         raise LoanNotFound()
     return loan
 
 
 @router.post("/", response_model=LoanResponse, status_code=status.HTTP_201_CREATED)
-def create_loan(loan_data: LoanCreate, db: Session = Depends(get_db)):
-    return service.create_loan(db=db, loan_data=loan_data)
+def create_loan(loan_data: LoanCreate, session: Session = Depends(get_session)):
+    return service.create_loan(session=session, loan_data=loan_data)
 
 
 @router.post("/return", response_model=LoanResponse)
-def return_book(return_data: LoanReturnRequest, db: Session = Depends(get_db)):
-    return service.return_book(db=db, return_data=return_data)
+def return_book(
+    return_data: LoanReturnRequest, session: Session = Depends(get_session)
+):
+    return service.return_book(session=session, return_data=return_data)
 
 
 @router.post("/{loan_key}/renew", response_model=LoanResponse)
-def renew_loan(loan_key: UUID, db: Session = Depends(get_db)):
-    return service.renew_loan(db=db, loan_key=loan_key)
+def renew_loan(loan_key: UUID, session: Session = Depends(get_session)):
+    return service.renew_loan(session=session, loan_key=loan_key)

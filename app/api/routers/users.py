@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
 from uuid import UUID
-from app.db.session import get_db
+from app.db.session import get_session
 from app.schemas.user import UserCreate, UserResponse, UserUpdate
 from app.schemas.loan import LoanResponse
 from app.services.user_service import UserService
@@ -14,21 +14,25 @@ service = UserService()
 
 
 @router.post("/", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
-def create_user(user: UserCreate, db: Session = Depends(get_db)):
-    return service.create(db=db, user=user)
+def create_user(user: UserCreate, session: Session = Depends(get_session)):
+    return service.create(session=session, user=user)
 
 
 @router.patch("/{user_key}", response_model=UserResponse)
-def update_user(user_key: UUID, payload: UserUpdate, db: Session = Depends(get_db)):
-    updated = service.update(db=db, user_key=str(user_key), data=payload)
+def update_user(
+    user_key: UUID, payload: UserUpdate, session: Session = Depends(get_session)
+):
+    updated = service.update(session=session, user_key=str(user_key), data=payload)
     return updated
 
 
 @router.post("/{user_key}/status", response_model=UserResponse)
-def change_user_status(user_key: UUID, status_enum: str, db: Session = Depends(get_db)):
+def change_user_status(
+    user_key: UUID, status_enum: str, session: Session = Depends(get_session)
+):
     try:
         updated = service.set_status(
-            db=db, user_key=str(user_key), status_enum=status_enum
+            session=session, user_key=str(user_key), status_enum=status_enum
         )
         return updated
     except ValueError as exc:
@@ -36,13 +40,15 @@ def change_user_status(user_key: UUID, status_enum: str, db: Session = Depends(g
 
 
 @router.get("/", response_model=List[UserResponse])
-def get_users(pagination: PaginationParams = Depends(), db: Session = Depends(get_db)):
-    return service.get_all(db, skip=pagination.skip, limit=pagination.per_page)
+def get_users(
+    pagination: PaginationParams = Depends(), session: Session = Depends(get_session)
+):
+    return service.get_all(session, skip=pagination.skip, limit=pagination.per_page)
 
 
 @router.get("/{user_key}", response_model=UserResponse)
-def get_user(user_key: UUID, db: Session = Depends(get_db)):
-    user = service.get_by_key(db, user_key)
+def get_user(user_key: UUID, session: Session = Depends(get_session)):
+    user = service.get_by_key(session, user_key)
     if user is None:
         raise UserNotFound()
     return user
@@ -52,9 +58,9 @@ def get_user(user_key: UUID, db: Session = Depends(get_db)):
 def get_user_loans(
     user_key: UUID,
     pagination: PaginationParams = Depends(),
-    db: Session = Depends(get_db),
+    session: Session = Depends(get_session),
 ):
     loans = service.get_user_loans(
-        db, user_key, skip=pagination.skip, limit=pagination.per_page
+        session, user_key, skip=pagination.skip, limit=pagination.per_page
     )
     return loans
