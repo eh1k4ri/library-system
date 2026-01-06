@@ -1,11 +1,12 @@
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 from uuid import UUID
 from app.db.session import get_db
 from app.services.loan_service import LoanService
 from app.schemas.loan import LoanCreate, LoanResponse, LoanReturnRequest
 from app.api.deps import PaginationParams
+from app.core.errors import LoanNotFound
 
 router = APIRouter()
 service = LoanService()
@@ -32,7 +33,7 @@ def read_loans(
 def read_loan(loan_key: UUID, db: Session = Depends(get_db)):
     loan = service.get_loan_by_key(db, loan_key=loan_key)
     if loan is None:
-        raise HTTPException(status_code=404, detail="Loan not found")
+        raise LoanNotFound()
     return loan
 
 

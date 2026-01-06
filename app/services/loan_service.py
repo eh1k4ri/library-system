@@ -1,7 +1,6 @@
 import uuid
 from datetime import datetime, timedelta, timezone
 from sqlalchemy.orm import Session
-from fastapi import HTTPException
 from app.models.loan import Loan
 from app.models.book import Book
 from app.models.user import User
@@ -9,6 +8,14 @@ from app.models.book_status import BookStatus
 from app.models.loan_status import LoanStatus
 from app.models.loan_event import LoanEvent
 from app.schemas.loan import LoanCreate, LoanReturnRequest
+from app.core.errors import (
+    UserNotFound,
+    UserNotActive,
+    MaxActiveLoansReached,
+    BookNotFound,
+    BookNotAvailable,
+    ActiveLoanNotFound,
+)
 
 
 class LoanService:
@@ -48,9 +55,9 @@ class LoanService:
     def create_loan(self, db: Session, loan_data: LoanCreate):
         user = db.query(User).filter(User.user_key == loan_data.user_key).first()
         if not user:
-            raise HTTPException(404, "User not found")
+            raise UserNotFound()
         if user.status.enumerator != "active":
-            raise HTTPException(400, "User is not active")
+            raise UserNotActive()
 
         active_loan_status = (
             db.query(LoanStatus).filter(LoanStatus.enumerator == "active").first()
@@ -62,13 +69,13 @@ class LoanService:
             .count()
         )
         if active_loans_count >= 3:
-            raise HTTPException(400, "User has reached maximum of 3 active loans")
+            raise MaxActiveLoansReached()
 
         book = db.query(Book).filter(Book.book_key == loan_data.book_key).first()
         if not book:
-            raise HTTPException(404, "Book not found")
+            raise BookNotFound()
         if book.status.enumerator != "available":
-            raise HTTPException(400, "Book is not available")
+            raise BookNotAvailable()
 
         try:
             loaned_status = (
@@ -109,7 +116,7 @@ class LoanService:
     def return_book(self, db: Session, return_data: LoanReturnRequest):
         book = db.query(Book).filter(Book.book_key == return_data.book_key).first()
         if not book:
-            raise HTTPException(404, "Book not found")
+            raise BookNotFound()
 
         active_status = (
             db.query(LoanStatus).filter(LoanStatus.enumerator == "active").first()
@@ -121,7 +128,7 @@ class LoanService:
         )
 
         if not loan:
-            raise HTTPException(404, "No active loan found for this book")
+            raise ActiveLoanNotFound()
 
         try:
             now = datetime.now(timezone.utc)

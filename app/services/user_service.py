@@ -1,17 +1,17 @@
 import uuid
 from sqlalchemy.orm import Session
-from fastapi import HTTPException
 from app.models.user import User
 from app.models.loan import Loan
 from app.models.user_status import UserStatus
 from app.schemas.user import UserCreate
+from app.core.errors import EmailAlreadyRegistered, UserNotFound
 
 
 class UserService:
     def create(self, db: Session, user: UserCreate):
         db_user = db.query(User).filter(User.email == user.email).first()
         if db_user:
-            raise HTTPException(status_code=400, detail="Email already registered")
+            raise EmailAlreadyRegistered()
 
         active_status = (
             db.query(UserStatus).filter(UserStatus.enumerator == "active").first()
@@ -48,7 +48,7 @@ class UserService:
 
         user = db.query(User).filter(User.user_key == user_key).first()
         if not user:
-            return None
+            raise UserNotFound()
 
         return (
             db.query(Loan)

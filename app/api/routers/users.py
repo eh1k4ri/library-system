@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status, HTTPException
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 from typing import List
 from uuid import UUID
@@ -7,6 +7,7 @@ from app.schemas.user import UserCreate, UserResponse
 from app.schemas.loan import LoanResponse
 from app.services.user_service import UserService
 from app.api.deps import PaginationParams
+from app.core.errors import UserNotFound
 
 router = APIRouter()
 service = UserService()
@@ -26,7 +27,7 @@ def get_users(pagination: PaginationParams = Depends(), db: Session = Depends(ge
 def get_user(user_key: UUID, db: Session = Depends(get_db)):
     user = service.get_by_key(db, user_key)
     if user is None:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise UserNotFound()
     return user
 
 
@@ -39,7 +40,4 @@ def get_user_loans(
     loans = service.get_user_loans(
         db, user_key, skip=pagination.skip, limit=pagination.per_page
     )
-
-    if loans is None:
-        raise HTTPException(status_code=404, detail="User not found")
     return loans
