@@ -13,7 +13,7 @@ service = LoanService()
 
 
 @router.get("/", response_model=List[LoanResponse])
-def read_loans(
+def get_loans(
     status: Optional[str] = None,
     overdue: bool = False,
     pagination: PaginationParams = Depends(),
@@ -30,7 +30,7 @@ def read_loans(
 
 
 @router.get("/{loan_key}", response_model=LoanResponse)
-def read_loan(loan_key: UUID, db: Session = Depends(get_db)):
+def get_loan(loan_key: UUID, db: Session = Depends(get_db)):
     loan = service.get_loan_by_key(db, loan_key=loan_key)
     if loan is None:
         raise LoanNotFound()

@@ -22,7 +22,7 @@ def create_reservation(
 
 
 @router.get("/", response_model=List[ReservationResponse])
-def read_reservations(
+def get_reservations(
     user_key: Optional[str] = None,
     book_key: Optional[str] = None,
     status: Optional[str] = None,
@@ -41,7 +41,7 @@ def read_reservations(
 
 
 @router.get("/{reservation_key}", response_model=ReservationResponse)
-def read_reservation(reservation_key: UUID, db: Session = Depends(get_db)):
+def get_reservation(reservation_key: UUID, db: Session = Depends(get_db)):
     reservation = service.get_reservation_by_key(db, reservation_key)
     if reservation is None:
         raise ReservationNotFound()
