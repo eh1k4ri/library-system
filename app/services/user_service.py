@@ -1,10 +1,11 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from app.models.user import User
 from app.models.loan import Loan
 from app.models.user_status import UserStatus
 from app.schemas.user import UserCreate
 from app.core.errors import EmailAlreadyRegistered, UserNotFound
 from app.utils.uuid import validate_uuid
+from app.utils.cache import get_cache, set_cache
 
 
 class UserService:
@@ -24,27 +25,47 @@ class UserService:
         return new_user
 
     def get_all(self, db: Session, skip: int = 0, limit: int = 100):
-        return db.query(User).offset(skip).limit(limit).all()
+        return (
+            db.query(User)
+            .options(joinedload(User.status))
+            .offset(skip)
+            .limit(limit)
+            .all()
+        )
 
     def get_by_key(self, db: Session, user_key: str):
         user_key = validate_uuid(user_key)
         if not user_key:
             return None
-        return db.query(User).filter(User.user_key == user_key).first()
+
+        cache_key = f"user:{user_key}:data"
+        cached_data = get_cache(cache_key)
+        if cached_data:
+            return cached_data
+
+        user = (
+            db.query(User)
+            .options(joinedload(User.status))
+            .filter(User.user_key == user_key)
+            .first()
+        )
+
+        if user:
+            set_cache(cache_key, user, ttl_seconds=60)
+
+        return user
 
     def get_user_loans(
         self, db: Session, user_key: str, skip: int = 0, limit: int = 100
     ):
-        user_key = validate_uuid(user_key)
-        if not user_key:
-            return None
+        user = self.get_by_key(db, user_key)
 
-        user = db.query(User).filter(User.user_key == user_key).first()
         if not user:
             raise UserNotFound()
 
         return (
             db.query(Loan)
+            .options(joinedload(Loan.book), joinedload(Loan.status))
             .filter(Loan.user_id == user.id)
             .offset(skip)
             .limit(limit)
