@@ -1,5 +1,7 @@
 def test_get_books_list(client):
-    client.post("/books/", json={"title": "Book 1", "author": "Author 1"})
+    client.post(
+        "/books/", json={"title": "Book 1", "author": "Author 1", "genre": "Tech"}
+    )
 
     response = client.get("/books/")
     assert response.status_code == 200
@@ -14,7 +16,7 @@ def test_get_books_empty_list(client):
 
 def test_get_book_by_key(client):
     create_response = client.post(
-        "/books/", json={"title": "Python 101", "author": "John Doe"}
+        "/books/", json={"title": "Python 101", "author": "John Doe", "genre": "Programming"}
     )
     assert create_response.status_code == 201
     book_key = create_response.json()["book_key"]
@@ -34,17 +36,10 @@ def test_get_book_not_found(client):
     assert response.json()["detail"]["code"] == "LBS001"
 
 
-def test_get_books_pagination(client):
-    for i in range(5):
-        client.post("/books/", json={"title": f"Book {i}", "author": f"Author {i}"})
-
-    response = client.get("/books/?page=1&per_page=2")
-    assert response.status_code == 200
-    assert len(response.json()) <= 2
-
-
 def test_get_availability(client):
-    resp = client.post("/books/", json={"title": "Avail Book", "author": "Author A"})
+    resp = client.post(
+        "/books/", json={"title": "Avail Book", "author": "Author A", "genre": "Fiction"}
+    )
     assert resp.status_code == 201
     book_key = resp.json()["book_key"]
 
@@ -61,7 +56,7 @@ def test_get_availability(client):
     user_key = user_resp.json()["user_key"]
 
     book_resp = client.post(
-        "/books/", json={"title": "Loaned Book", "author": "Author B"}
+        "/books/", json={"title": "Loaned Book", "author": "Author B", "genre": "History"}
     )
     assert book_resp.status_code == 201
     loan_book_key = book_resp.json()["book_key"]
@@ -85,3 +80,32 @@ def test_get_availability(client):
     response = client.get("/books/?page=2&per_page=2")
     assert response.status_code == 200
     assert len(response.json()) <= 2
+
+
+def test_get_books_filter_by_genre(client):
+    client.post(
+        "/books/", json={"title": "Genre A", "author": "Auth A", "genre": "Fantasy"}
+    )
+    client.post(
+        "/books/", json={"title": "Genre B", "author": "Auth B", "genre": "Sci-Fi"}
+    )
+
+    r = client.get("/books/?genre=Fantasy")
+    assert r.status_code == 200
+    data = r.json()
+    assert len(data) >= 1
+    assert all(b["genre"].lower() == "fantasy" for b in data)
+
+
+def test_get_genres(client):
+    client.post(
+        "/books/", json={"title": "G1", "author": "A1", "genre": "Drama"}
+    )
+    client.post(
+        "/books/", json={"title": "G2", "author": "A2", "genre": "Horror"}
+    )
+
+    resp = client.get("/books/genres")
+    assert resp.status_code == 200
+    genres = resp.json()
+    assert set([g.lower() for g in genres]).issuperset({"drama", "horror"})

@@ -17,8 +17,19 @@ def create_book(book: BookCreate, db: Session = Depends(get_db)):
 
 
 @router.get("/", response_model=List[BookResponse])
-def get_books(pagination: PaginationParams = Depends(), db: Session = Depends(get_db)):
-    return service.get_all(db=db, skip=pagination.skip, limit=pagination.per_page)
+def get_books(
+    pagination: PaginationParams = Depends(),
+    genre: str | None = None,
+    db: Session = Depends(get_db),
+):
+    return service.get_all(
+        db=db, skip=pagination.skip, limit=pagination.per_page, genre=genre
+    )
+
+
+@router.get("/genres", response_model=List[str])
+def get_genres(db: Session = Depends(get_db)):
+    return service.get_genres(db=db)
 
 
 @router.get("/{book_key}", response_model=BookResponse)

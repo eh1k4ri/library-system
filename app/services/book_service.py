@@ -15,21 +15,39 @@ class BookService:
         )
 
         new_book = Book(
-            title=book.title, author=book.author, status_id=available_status.id
+            title=book.title,
+            author=book.author,
+            genre=book.genre,
+            status_id=available_status.id,
         )
         db.add(new_book)
         db.commit()
         db.refresh(new_book)
         return new_book
     
-    def get_all(self, db: Session, skip: int = 0, limit: int = 100):
-        return (
-            db.query(Book)
-            .options(joinedload(Book.status))
-            .offset(skip)
-            .limit(limit)
+    def get_all(
+        self,
+        db: Session,
+        skip: int = 0,
+        limit: int = 100,
+        genre: str | None = None,
+    ):
+        query = db.query(Book).options(joinedload(Book.status))
+
+        if genre:
+            query = query.filter(Book.genre.ilike(genre))
+
+        return query.offset(skip).limit(limit).all()
+
+    def get_genres(self, db: Session):
+        genres = (
+            db.query(Book.genre)
+            .filter(Book.genre.isnot(None))
+            .distinct()
+            .order_by(Book.genre)
             .all()
         )
+        return [g[0] for g in genres]
 
     def get_by_key(self, db: Session, book_key: str):
         book_key = validate_uuid(book_key)

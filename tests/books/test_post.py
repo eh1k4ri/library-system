@@ -1,6 +1,7 @@
 def test_post_book_success(client):
     response = client.post(
-        "/books/", json={"title": "Clean Code", "author": "Uncle Bob"}
+        "/books/",
+        json={"title": "Clean Code", "author": "Uncle Bob", "genre": "Programming"},
     )
     assert response.status_code == 201
     data = response.json()
@@ -12,9 +13,9 @@ def test_post_book_success(client):
 
 def test_post_multiple_books(client):
     books = [
-        {"title": "Book 1", "author": "Author 1"},
-        {"title": "Book 2", "author": "Author 2"},
-        {"title": "Book 3", "author": "Author 3"},
+        {"title": "Book 1", "author": "Author 1", "genre": "Drama"},
+        {"title": "Book 2", "author": "Author 2", "genre": "Sci-Fi"},
+        {"title": "Book 3", "author": "Author 3", "genre": "History"},
     ]
     created_books = []
 
@@ -28,11 +29,12 @@ def test_post_multiple_books(client):
 
 
 def test_post_book_with_same_title_different_author(client):
-    book = {"title": "Python Guide", "author": "Author 1"}
+    book = {"title": "Python Guide", "author": "Author 1", "genre": "Reference"}
     response1 = client.post("/books/", json=book)
     assert response1.status_code == 201
 
     book["author"] = "Author 2"
+    book["genre"] = "Reference"
     response2 = client.post("/books/", json=book)
     assert response2.status_code == 201
 
