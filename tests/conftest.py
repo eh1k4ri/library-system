@@ -1,13 +1,14 @@
+import os
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.pool import StaticPool
 from sqlalchemy.orm import sessionmaker
 from fastapi.testclient import TestClient
-
 from app.db.session import Base, get_db
 from app.main import app
-from app.models import UserStatus, BookStatus, LoanStatus
+from app.models import UserStatus, BookStatus, LoanStatus, User, Book, Loan
 
+os.environ.setdefault("DATABASE_URL", "sqlite:///:memory:")
 SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
 
 engine = create_engine(
