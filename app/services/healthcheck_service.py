@@ -11,9 +11,9 @@ class HealthcheckService:
                 "database": "connected",
                 "message": "System is running",
             }
-        except Exception as e:
+        except Exception as exc:
             return {
                 "status": "unavailable",
                 "database": "disconnected",
-                "error": str(e),
+                "error": str(exc),
             }
