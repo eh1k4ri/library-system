@@ -77,7 +77,7 @@ class LoanService:
 
             book.status_id = loaned_status.id
             now = datetime.now(timezone.utc)
-            due_date = now + timedelta(days=loan_data.days)
+            due_date = now + timedelta(days=14)
 
             new_loan = Loan(
                 user_id=user.id,
