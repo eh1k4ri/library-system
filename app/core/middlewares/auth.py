@@ -9,7 +9,7 @@ SECURITY_PASS = os.getenv("PASSWORD")
 
 
 async def basic_auth(request: Request, call_next):
-    public_paths = ["/docs", "/healthcheck", "/openapi.json"]
+    public_paths = ["/docs", "/healthcheck", "/openapi.json", "/metrics"]
 
     if any(request.url.path.startswith(path) for path in public_paths):
         return await call_next(request)
