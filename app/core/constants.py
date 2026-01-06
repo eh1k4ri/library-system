@@ -1,7 +1,12 @@
 import os
 from typing import List
+from dotenv import load_dotenv
 
-DATABASE_URL: str = os.getenv("DATABASE_URL")
+load_dotenv()
+
+DATABASE_URL: str | None = os.getenv("DATABASE_URL")
+if not DATABASE_URL:
+    raise RuntimeError("DATABASE_URL must be set via environment or .env")
 SECURITY_USER: str = os.getenv("USER", "admin")
 SECURITY_PASS: str = os.getenv("PASSWORD", "password123")
 

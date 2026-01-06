@@ -1,11 +1,25 @@
 from fastapi import FastAPI
-from app.api.routers import users, books, healthcheck, loans, reservations, metrics, reports
+from app.api.routers import (
+    users,
+    books,
+    healthcheck,
+    loans,
+    reservations,
+    metrics,
+    reports,
+)
 from app.core.logger import configure_logging
-from app.core.middlewares import log_requests, rate_limit, basic_auth, metrics as metrics_middleware
+from app.core.constants import APP_NAME
+from app.core.middlewares import (
+    log_requests,
+    rate_limit,
+    basic_auth,
+    metrics as metrics_middleware,
+)
 
 configure_logging()
 app = FastAPI(
-    title="Library System API",
+    title=APP_NAME,
     docs_url="/docs",
 )
 app.middleware("http")(basic_auth)
