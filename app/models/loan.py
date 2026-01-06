@@ -23,14 +23,16 @@ class Loan(Base):
     book_id = Column(Integer, ForeignKey("books.id"), nullable=False)
     status_id = Column(Integer, ForeignKey("loan_status.id"), nullable=False)
 
-    start_date = Column(DateTime(timezone=True), server_default=func.now())
-    due_date = Column(DateTime(timezone=True), nullable=False)
-    return_date = Column(DateTime(timezone=True), nullable=True)
+    start_date = Column(DateTime(timezone=True, precision=3), server_default=func.now())
+    due_date = Column(DateTime(timezone=True, precision=3), nullable=False)
+    return_date = Column(DateTime(timezone=True, precision=3), nullable=True)
     fine_amount = Column(Float, default=0.0)
 
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    created_at = Column(DateTime(timezone=True, precision=3), server_default=func.now())
     updated_at = Column(
-        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+        DateTime(timezone=True, precision=3),
+        server_default=func.now(),
+        onupdate=func.now(),
     )
 
     user = relationship("User", back_populates="loans")

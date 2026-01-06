@@ -11,7 +11,7 @@ class UserEvent(Base):
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     old_status_id = Column(Integer, ForeignKey("user_status.id"), nullable=True)
     new_status_id = Column(Integer, ForeignKey("user_status.id"), nullable=False)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    created_at = Column(DateTime(timezone=True, precision=3), server_default=func.now())
 
     user = relationship("User", back_populates="user_events")
     old_status = relationship("UserStatus", foreign_keys=[old_status_id])

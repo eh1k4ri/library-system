@@ -23,7 +23,7 @@ class Book(Base):
     title = Column(String, index=True, nullable=False)
     author = Column(String, nullable=False)
     status_id = Column(Integer, ForeignKey("book_status.id"), nullable=False)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    created_at = Column(DateTime(timezone=True, precision=3), server_default=func.now())
 
     status = relationship("BookStatus", back_populates="books")
     loans = relationship("Loan", back_populates="book")
