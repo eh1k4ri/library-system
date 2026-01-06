@@ -9,8 +9,11 @@ from app.utils.text import clean_str, clean_optional_str
 class BookBase(BaseModel):
     title: str = Field(min_length=1, max_length=200, description="Book title")
     author: str = Field(min_length=1, max_length=200, description="Author name")
+    genre: str = Field(
+        default="General", min_length=1, max_length=100, description="Book genre"
+    )
 
-    @field_validator("title", "author")
+    @field_validator("title", "author", "genre")
     @classmethod
     def strip_and_require_content(cls, value: str, info: FieldValidationInfo) -> str:
         return clean_str(value, info.field_name)
@@ -27,8 +30,11 @@ class BookUpdate(BaseModel):
     author: Optional[str] = Field(
         None, min_length=1, max_length=200, description="New author"
     )
+    genre: Optional[str] = Field(
+        None, min_length=1, max_length=100, description="New genre"
+    )
 
-    @field_validator("title", "author")
+    @field_validator("title", "author", "genre")
     @classmethod
     def strip_if_present(
         cls, value: Optional[str], info: FieldValidationInfo

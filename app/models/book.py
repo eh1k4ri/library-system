@@ -22,6 +22,7 @@ class Book(Base):
 
     title = Column(String, index=True, nullable=False)
     author = Column(String, nullable=False)
+    genre = Column(String, nullable=True)
     status_id = Column(Integer, ForeignKey("book_status.id"), nullable=False)
     created_at = Column(
         TIMESTAMP(timezone=True, precision=3), server_default=func.now()
