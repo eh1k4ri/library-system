@@ -1,13 +1,13 @@
-import os
 import requests
 from datetime import datetime
 from typing import Optional
+from app.core.constants import NOTIFY_WEBHOOK_URL
 from app.core.logger import get_logger
 
 
 class NotificationService:
     def __init__(self) -> None:
-        self.webhook_url = os.getenv("NOTIFY_WEBHOOK_URL")
+        self.webhook_url = NOTIFY_WEBHOOK_URL
         self.logger = get_logger(__name__)
 
     def notify_due_date(
@@ -30,8 +30,8 @@ class NotificationService:
         }
 
         try:
-            resp = requests.post(self.webhook_url, json=payload, timeout=3)
-            resp.raise_for_status()
+            response = requests.post(self.webhook_url, json=payload, timeout=3)
+            response.raise_for_status()
         except Exception as exc:
             self.logger.warning("notification_failed", extra={"details": str(exc)})
 

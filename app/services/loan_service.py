@@ -8,6 +8,13 @@ from app.models.loan_status import LoanStatus
 from app.models.loan_event import LoanEvent
 from app.schemas.loan import LoanCreate, LoanReturnRequest
 from app.services.notification_service import notification_service
+from app.core.constants import (
+    LOAN_DEFAULT_DAYS,
+    LOAN_FINE_PER_DAY,
+    LOAN_MAX_ACTIVE_LOANS,
+    LOAN_RENEWAL_EXTENSION_DAYS,
+    CACHE_ENTITY_TTL,
+)
 from app.core.errors import (
     UserNotFound,
     UserNotActive,
@@ -20,15 +27,14 @@ from app.core.errors import (
     CannotRenewOverdueLoan,
 )
 from app.utils.uuid import validate_uuid
-from app.utils.cache import get_cache, set_cache
+from app.utils.cache import get_cache, set_cache, clear_cache
 
 
 class LoanService:
-    RENEWAL_EXTENSION_DAYS = 7
 
-    def get_loans(self, db: Session, skip: int = 0, limit: int = 100):
+    def get_loans(self, session: Session, skip: int = 0, limit: int = 100):
         return (
-            db.query(Loan)
+            session.query(Loan)
             .options(
                 joinedload(Loan.user), joinedload(Loan.book), joinedload(Loan.status)
             )
@@ -39,13 +45,13 @@ class LoanService:
 
     def get_loans_filtered(
         self,
-        db: Session,
+        session: Session,
         skip: int = 0,
         limit: int = 100,
         status: str | None = None,
         overdue: bool = False,
     ):
-        query = db.query(Loan).options(
+        query = session.query(Loan).options(
             joinedload(Loan.user), joinedload(Loan.book), joinedload(Loan.status)
         )
 
@@ -62,7 +68,7 @@ class LoanService:
 
         return query.offset(skip).limit(limit).all()
 
-    def get_loan_by_key(self, db: Session, loan_key: str):
+    def get_loan_by_key(self, session: Session, loan_key: str):
         loan_key = validate_uuid(loan_key)
         if not loan_key:
             return None
@@ -73,7 +79,7 @@ class LoanService:
             return cached_loan
 
         loan = (
-            db.query(Loan)
+            session.query(Loan)
             .options(
                 joinedload(Loan.user), joinedload(Loan.book), joinedload(Loan.status)
             )
@@ -82,13 +88,13 @@ class LoanService:
         )
 
         if loan:
-            set_cache(cache_key, loan, ttl_seconds=60)
+            set_cache(cache_key, loan, ttl_seconds=CACHE_ENTITY_TTL)
 
         return loan
 
-    def create_loan(self, db: Session, loan_data: LoanCreate):
+    def create_loan(self, session: Session, loan_data: LoanCreate):
         user = (
-            db.query(User)
+            session.query(User)
             .options(joinedload(User.status))
             .filter(User.user_key == loan_data.user_key)
             .first()
@@ -99,19 +105,19 @@ class LoanService:
             raise UserNotActive()
 
         active_loan_status = (
-            db.query(LoanStatus).filter(LoanStatus.enumerator == "active").first()
+            session.query(LoanStatus).filter(LoanStatus.enumerator == "active").first()
         )
 
         active_loans_count = (
-            db.query(Loan)
+            session.query(Loan)
             .filter(Loan.user_id == user.id, Loan.status_id == active_loan_status.id)
             .count()
         )
-        if active_loans_count >= 3:
+        if active_loans_count >= LOAN_MAX_ACTIVE_LOANS:
             raise MaxActiveLoansReached()
 
         book = (
-            db.query(Book)
+            session.query(Book)
             .filter(Book.book_key == loan_data.book_key)
             .with_for_update()
             .first()
@@ -124,13 +130,15 @@ class LoanService:
 
         try:
             loaned_status = (
-                db.query(BookStatus).filter(BookStatus.enumerator == "loaned").first()
+                session.query(BookStatus)
+                .filter(BookStatus.enumerator == "loaned")
+                .first()
             )
 
             book.status_id = loaned_status.id
 
             now = datetime.now(timezone.utc)
-            due_date = now + timedelta(days=14)
+            due_date = now + timedelta(days=LOAN_DEFAULT_DAYS)
 
             new_loan = Loan(
                 user_id=user.id,
@@ -140,8 +148,8 @@ class LoanService:
                 due_date=due_date,
                 fine_amount=0.0,
             )
-            db.add(new_loan)
-            db.flush()
+            session.add(new_loan)
+            session.flush()
 
             event = LoanEvent(
                 loan_id=new_loan.id,
@@ -149,10 +157,12 @@ class LoanService:
                 new_status_id=active_loan_status.id,
                 created_at=now,
             )
-            db.add(event)
+            session.add(event)
 
-            db.commit()
-            db.refresh(new_loan)
+            session.commit()
+            session.refresh(new_loan)
+
+            clear_cache(f"book:{book.book_key}:details")
 
             try:
                 notification_service.notify_due_date(
@@ -165,27 +175,31 @@ class LoanService:
                 pass
             return new_loan
 
-        except Exception as e:
-            db.rollback()
-            raise e
+        except Exception as exc:
+            session.rollback()
+            raise exc
 
-    def return_book(self, db: Session, return_data: LoanReturnRequest):
-        book = db.query(Book).filter(Book.book_key == return_data.book_key).first()
+    def return_book(self, session: Session, return_data: LoanReturnRequest):
+        book = session.query(Book).filter(Book.book_key == return_data.book_key).first()
         if not book:
             raise BookNotFound()
 
         active_status = (
-            db.query(LoanStatus).filter(LoanStatus.enumerator == "active").first()
+            session.query(LoanStatus).filter(LoanStatus.enumerator == "active").first()
         )
         returned_status = (
-            db.query(LoanStatus).filter(LoanStatus.enumerator == "returned").first()
+            session.query(LoanStatus)
+            .filter(LoanStatus.enumerator == "returned")
+            .first()
         )
         available_book_status = (
-            db.query(BookStatus).filter(BookStatus.enumerator == "available").first()
+            session.query(BookStatus)
+            .filter(BookStatus.enumerator == "available")
+            .first()
         )
 
         loan = (
-            db.query(Loan)
+            session.query(Loan)
             .filter(Loan.book_id == book.id, Loan.status_id == active_status.id)
             .first()
         )
@@ -207,7 +221,7 @@ class LoanService:
                 if now > due_date_aware:
                     days_late = (now - due_date_aware).days
                     if days_late > 0:
-                        fine = days_late * 2.0
+                        fine = days_late * LOAN_FINE_PER_DAY
 
             loan.return_date = now
             loan.status_id = returned_status.id
@@ -221,23 +235,26 @@ class LoanService:
                 new_status_id=returned_status.id,
                 created_at=now,
             )
-            db.add(event)
+            session.add(event)
 
-            db.commit()
-            db.refresh(loan)
+            session.commit()
+            session.refresh(loan)
+
+            clear_cache(f"book:{return_data.book_key}:details")
+
             return loan
 
-        except Exception as e:
-            db.rollback()
-            raise e
+        except Exception as exc:
+            session.rollback()
+            raise exc
 
-    def renew_loan(self, db: Session, loan_key: str):
+    def renew_loan(self, session: Session, loan_key: str):
         loan_key = validate_uuid(loan_key)
         if not loan_key:
             raise LoanNotFound()
 
         loan = (
-            db.query(Loan)
+            session.query(Loan)
             .options(
                 joinedload(Loan.user),
                 joinedload(Loan.book),
@@ -253,7 +270,7 @@ class LoanService:
             raise LoanNotFound()
 
         active_status = (
-            db.query(LoanStatus).filter(LoanStatus.enumerator == "active").first()
+            session.query(LoanStatus).filter(LoanStatus.enumerator == "active").first()
         )
 
         if loan.status_id != active_status.id:
@@ -267,7 +284,7 @@ class LoanService:
         if due_date and due_date <= now:
             raise CannotRenewOverdueLoan()
 
-        extension = timedelta(days=self.RENEWAL_EXTENSION_DAYS)
+        extension = timedelta(days=LOAN_RENEWAL_EXTENSION_DAYS)
         loan.due_date = (due_date or now) + extension
 
         event = LoanEvent(
@@ -276,10 +293,10 @@ class LoanService:
             new_status_id=active_status.id,
             created_at=now,
         )
-        db.add(event)
+        session.add(event)
 
-        db.commit()
-        db.refresh(loan)
+        session.commit()
+        session.refresh(loan)
 
         cache_key = f"loan:{loan_key}:details"
         set_cache(cache_key, loan, ttl_seconds=60)
