@@ -1,6 +1,11 @@
 from typing import Optional
 
 
+def normalize_email(value: str, field_name: str = "email") -> str:
+    trimmed = clean_str(value, field_name)
+    return trimmed.lower()
+
+
 def clean_str(value: str, field_name: str = "value") -> str:
     if value is None:
         raise ValueError(f"{field_name} must not be null")
