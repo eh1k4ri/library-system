@@ -14,7 +14,7 @@ class BookService:
             db.query(BookStatus).filter(BookStatus.enumerator == "available").first()
         )
         if not available_status:
-            raise HTTPException(status_code=500, detail="Status 'available' not found")
+            raise ValueError("Critical: Status 'available' missing in DB")
 
         new_book = Book(
             title=book.title, author=book.author, status_id=available_status.id

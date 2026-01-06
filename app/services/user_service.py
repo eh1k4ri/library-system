@@ -16,8 +16,11 @@ class UserService:
         active_status = (
             db.query(UserStatus).filter(UserStatus.enumerator == "active").first()
         )
+
         if not active_status:
-            raise HTTPException(status_code=500, detail="Status 'active' not found")
+            raise RuntimeError(
+                "Critical Error: Database is missing 'active' status configuration."
+            )
 
         new_user = User(name=user.name, email=user.email, status_id=active_status.id)
         db.add(new_user)
