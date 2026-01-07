@@ -1,8 +1,11 @@
-from pydantic import BaseModel, ConfigDict, Field, field_validator, FieldValidationInfo
 from datetime import datetime
-from uuid import UUID
 from typing import Optional
-from app.utils.text import clean_str, clean_optional_str
+from uuid import UUID
+
+from pydantic import BaseModel, ConfigDict, Field, FieldValidationInfo, field_validator
+
+from app.utils.text import clean_optional_str, clean_str
+
 from .status import StatusResponse
 
 

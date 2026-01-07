@@ -1,6 +1,8 @@
-from fastapi import Query
 from dataclasses import dataclass
-from app.core.constants import PAGINATION_MIN, PAGINATION_MAX_LIMIT
+
+from fastapi import Query
+
+from app.core.constants import PAGINATION_MAX_LIMIT, PAGINATION_MIN
 
 
 @dataclass

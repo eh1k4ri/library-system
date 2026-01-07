@@ -1,33 +1,35 @@
 from datetime import datetime, timedelta, timezone
+
 from sqlalchemy.orm import Session, joinedload
-from app.models.loan import Loan
-from app.models.book import Book
-from app.models.user import User
-from app.models.book_status import BookStatus
-from app.models.loan_status import LoanStatus
-from app.models.loan_event import LoanEvent
-from app.schemas.loan import LoanCreate, LoanReturnRequest
-from app.services.notification_service import NotificationService
+
 from app.core.constants import (
+    CACHE_ENTITY_TTL,
     LOAN_DEFAULT_DAYS,
     LOAN_FINE_PER_DAY,
     LOAN_MAX_ACTIVE_LOANS,
     LOAN_RENEWAL_EXTENSION_DAYS,
-    CACHE_ENTITY_TTL,
 )
 from app.core.errors import (
-    UserNotFound,
-    UserNotActive,
-    MaxActiveLoansReached,
-    BookNotFound,
-    BookNotAvailable,
     ActiveLoanNotFound,
-    LoanNotFound,
+    BookNotAvailable,
+    BookNotFound,
     CannotRenewInactiveLoan,
     CannotRenewOverdueLoan,
+    LoanNotFound,
+    MaxActiveLoansReached,
+    UserNotActive,
+    UserNotFound,
 )
+from app.models.book import Book
+from app.models.book_status import BookStatus
+from app.models.loan import Loan
+from app.models.loan_event import LoanEvent
+from app.models.loan_status import LoanStatus
+from app.models.user import User
+from app.schemas.loan import LoanCreate, LoanReturnRequest
+from app.services.notification_service import NotificationService
+from app.utils.cache import clear_cache, get_cache, set_cache
 from app.utils.uuid import validate_uuid
-from app.utils.cache import get_cache, set_cache, clear_cache
 
 
 class LoanService:

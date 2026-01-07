@@ -1,13 +1,15 @@
-from fastapi import APIRouter, Depends, status
-from sqlalchemy.orm import Session
 from typing import List, Optional
 from uuid import UUID
-from app.db.session import get_session
-from app.schemas.user import UserCreate, UserResponse, UserUpdate
-from app.schemas.loan import LoanResponse
-from app.services.user_service import UserService
+
+from fastapi import APIRouter, Depends, status
+from sqlalchemy.orm import Session
+
 from app.api.deps import PaginationParams
-from app.core.errors import UserNotFound, InvalidStatus
+from app.core.errors import InvalidStatus, UserNotFound
+from app.db.session import get_session
+from app.schemas.loan import LoanResponse
+from app.schemas.user import UserCreate, UserResponse, UserUpdate
+from app.services.user_service import UserService
 
 router = APIRouter()
 service = UserService()

@@ -1,6 +1,8 @@
 import time
-from fastapi import Request
 from typing import Callable
+
+from fastapi import Request
+
 from app.core.metrics import record_request
 
 

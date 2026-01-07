@@ -1,15 +1,17 @@
 from datetime import datetime
 from typing import Optional
+
 from sqlalchemy.orm import Session, joinedload
-from app.models.user import User
-from app.models.loan import Loan
-from app.models.user_status import UserStatus
-from app.models.user_event import UserEvent
-from app.schemas.user import UserCreate, UserUpdate
+
 from app.core.constants import CACHE_ENTITY_TTL
 from app.core.errors import EmailAlreadyRegistered, UserNotFound
+from app.models.loan import Loan
+from app.models.user import User
+from app.models.user_event import UserEvent
+from app.models.user_status import UserStatus
+from app.schemas.user import UserCreate, UserUpdate
+from app.utils.cache import clear_cache, get_cache, set_cache
 from app.utils.uuid import validate_uuid
-from app.utils.cache import get_cache, set_cache, clear_cache
 
 
 class UserService:

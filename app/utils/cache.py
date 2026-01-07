@@ -1,8 +1,8 @@
 import time
-from typing import Any, Optional
 from threading import RLock
+from typing import Any, Optional
 
-from app.core.constants import CACHE_MAX_SIZE, CACHE_DEFAULT_TTL
+from app.core.constants import CACHE_DEFAULT_TTL, CACHE_MAX_SIZE
 
 _store: dict[str, tuple[float, Any]] = {}
 _lock = RLock()

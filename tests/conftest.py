@@ -1,20 +1,22 @@
-import os
-import pytest
 import base64
-from sqlalchemy import create_engine
-from sqlalchemy.pool import StaticPool
-from sqlalchemy.orm import sessionmaker
+import os
+
+import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import StaticPool
+
 from app.db.session import Base, get_session
 from app.main import app
 from app.models import (
-    UserStatus,
+    Book,
     BookStatus,
+    Loan,
     LoanStatus,
     ReservationStatus,
     User,
-    Book,
-    Loan,
+    UserStatus,
 )
 
 os.environ.setdefault("DATABASE_URL", "sqlite:///:memory:")

@@ -1,12 +1,14 @@
 from typing import List, Optional
+from uuid import UUID
+
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
-from uuid import UUID
-from app.db.session import get_session
-from app.services.loan_service import LoanService
-from app.schemas.loan import LoanCreate, LoanResponse, LoanReturnRequest
+
 from app.api.deps import PaginationParams
 from app.core.errors import LoanNotFound
+from app.db.session import get_session
+from app.schemas.loan import LoanCreate, LoanResponse, LoanReturnRequest
+from app.services.loan_service import LoanService
 
 router = APIRouter()
 service = LoanService()

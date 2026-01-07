@@ -1,17 +1,19 @@
 from datetime import datetime
 from typing import Optional
+
 from sqlalchemy import select
 from sqlalchemy.orm import Session, joinedload
+
+from app.core.constants import CACHE_ENTITY_TTL
+from app.core.errors import BookNotFound
 from app.models.book import Book
-from app.models.book_status import BookStatus
 from app.models.book_event import BookEvent
+from app.models.book_status import BookStatus
 from app.models.loan import Loan
 from app.models.loan_status import LoanStatus
 from app.schemas.book import BookCreate, BookUpdate
-from app.core.constants import CACHE_ENTITY_TTL
+from app.utils.cache import clear_cache, get_cache, set_cache
 from app.utils.uuid import validate_uuid
-from app.utils.cache import get_cache, set_cache, clear_cache
-from app.core.errors import BookNotFound
 
 
 class BookService:

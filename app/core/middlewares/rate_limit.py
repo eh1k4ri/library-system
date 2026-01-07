@@ -1,13 +1,14 @@
 import time
-from typing import Callable, Dict
 from threading import Lock
+from typing import Callable, Dict
+
 from fastapi import Request, status
 from starlette.responses import JSONResponse
 
 from app.core.constants import (
+    RATE_LIMIT_CLEANUP_INTERVAL,
     RATE_LIMIT_REQUESTS,
     RATE_LIMIT_WINDOW,
-    RATE_LIMIT_CLEANUP_INTERVAL,
 )
 
 _buckets: Dict[str, list] = {}

@@ -1,16 +1,18 @@
+from typing import List
+
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
-from typing import List
+
+from app.api.deps import PaginationParams
+from app.core.errors import BookNotFound, InvalidStatus
 from app.db.session import get_session
 from app.schemas.book import (
+    BookAvailabilityResponse,
     BookCreate,
     BookResponse,
-    BookAvailabilityResponse,
     BookUpdate,
 )
 from app.services.book_service import BookService
-from app.api.deps import PaginationParams
-from app.core.errors import BookNotFound, InvalidStatus
 
 router = APIRouter()
 service = BookService()

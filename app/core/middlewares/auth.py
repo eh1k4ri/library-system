@@ -1,8 +1,10 @@
 import base64
 import secrets
+
 from fastapi import Request
-from app.core.constants import SECURITY_USER, SECURITY_PASS, PUBLIC_PATHS
-from app.core.auth_errors import MissingCredentials, InvalidCredentials
+
+from app.core.auth_errors import InvalidCredentials, MissingCredentials
+from app.core.constants import PUBLIC_PATHS, SECURITY_PASS, SECURITY_USER
 
 
 async def basic_auth(request: Request, call_next):

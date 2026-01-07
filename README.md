@@ -65,6 +65,25 @@ curl http://localhost:8000/metrics
 | **Livro** | `app/models/book.py` |
 | **Empréstimo** | `app/models/loan.py` |
 
+#### Status das Entidades
+**User Status:**
+- `active` - Usuário ativo (pode fazer empréstimos)
+- `suspended` - Usuário suspenso (não pode fazer empréstimos)
+- `deactivated` - Usuário desativado (não pode fazer empréstimos)
+
+**Book Status:**
+- `available` - Livro disponível para empréstimo
+- `loaned` - Livro emprestado
+
+**Loan Status:**
+- `active` - Empréstimo em andamento
+- `returned` - Empréstimo devolvido
+
+**Reservation Status:**
+- `active` - Reserva ativa
+- `cancelled` - Reserva cancelada
+- `completed` - Reserva concluída (usuário pegou o livro)
+
 #### **Gestão de Usuários**
 | Requerimento | Método | Endpoint |
 | :--- | :---: | :--- |

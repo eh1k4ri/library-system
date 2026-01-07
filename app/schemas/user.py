@@ -1,16 +1,19 @@
+from datetime import datetime
+from typing import Optional
+from uuid import UUID
+
 from pydantic import (
     BaseModel,
-    EmailStr,
     ConfigDict,
+    EmailStr,
     Field,
-    field_validator,
     FieldValidationInfo,
+    field_validator,
 )
-from datetime import datetime
-from uuid import UUID
-from typing import Optional
-from .status import StatusResponse
+
 from app.utils.text import clean_str, normalize_email
+
+from .status import StatusResponse
 
 
 class UserBase(BaseModel):

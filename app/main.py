@@ -1,22 +1,20 @@
 from fastapi import FastAPI
 from fastapi.openapi.utils import get_openapi
+
 from app.api.routers import (
-    users,
     books,
     healthcheck,
     loans,
-    reservations,
     metrics,
     reports,
+    reservations,
+    users,
 )
-from app.core.logger import configure_logging
 from app.core.constants import APP_NAME
-from app.core.middlewares import (
-    log_requests,
-    rate_limit,
-    basic_auth,
-    metrics as metrics_middleware,
-)
+from app.core.logger import configure_logging
+from app.core.middlewares import basic_auth, log_requests
+from app.core.middlewares import metrics as metrics_middleware
+from app.core.middlewares import rate_limit
 
 configure_logging()
 

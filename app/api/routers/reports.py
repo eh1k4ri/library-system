@@ -1,10 +1,12 @@
 from typing import Optional
+
 from fastapi import APIRouter, Depends, Response
 from sqlalchemy.orm import Session
-from app.db.session import get_session
-from app.services.report_service import ReportService
+
 from app.api.deps import PaginationParams
 from app.core.errors import InvalidExportFormat
+from app.db.session import get_session
+from app.services.report_service import ReportService
 
 router = APIRouter()
 report_service = ReportService()

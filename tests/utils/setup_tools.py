@@ -1,6 +1,8 @@
-import pytest
 from datetime import datetime, timedelta, timezone
 from uuid import UUID
+
+import pytest
+
 from app.models.loan import Loan
 
 

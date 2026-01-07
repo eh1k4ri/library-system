@@ -1,10 +1,12 @@
-from pydantic import BaseModel, ConfigDict, Field
 from datetime import datetime
-from typing import Optional, List
+from typing import List, Optional
 from uuid import UUID
-from .status import StatusResponse
-from .loan_event import LoanEventResponse
+
+from pydantic import BaseModel, ConfigDict, Field
+
 from .book import BookResponse
+from .loan_event import LoanEventResponse
+from .status import StatusResponse
 from .user import UserResponse
 
 

@@ -1,6 +1,8 @@
-import requests
 from datetime import datetime
 from typing import Optional
+
+import requests
+
 from app.core.constants import get_notify_webhook_url
 from app.core.logger import get_logger
 
