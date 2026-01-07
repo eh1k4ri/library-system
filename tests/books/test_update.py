@@ -1,10 +1,5 @@
-def test_update_book_success(client):
-    response = client.post(
-        "/books/",
-        json={"title": "Book One", "author": "Author", "genre": "tech"},
-    )
-    assert response.status_code == 201
-    book_key = response.json()["book_key"]
+def test_update_book_success(client, created_book):
+    book_key = created_book["book_key"]
 
     update_response = client.patch(
         f"/books/{book_key}", json={"title": "Book One Updated", "genre": "science"}
@@ -16,13 +11,8 @@ def test_update_book_success(client):
     assert data["genre"] == "science"
 
 
-def test_change_book_status(client):
-    response = client.post(
-        "/books/",
-        json={"title": "Book Two", "author": "Author", "genre": "tech"},
-    )
-    assert response.status_code == 201
-    book_key = response.json()["book_key"]
+def test_change_book_status(client, created_book):
+    book_key = created_book["book_key"]
 
     update_response = client.post(
         f"/books/{book_key}/status", params={"status_enum": "loaned"}
@@ -31,13 +21,8 @@ def test_change_book_status(client):
     assert update_response.json()["status"]["enumerator"] == "loaned"
 
 
-def test_change_book_status_invalid(client):
-    response = client.post(
-        "/books/",
-        json={"title": "Book Three", "author": "Author", "genre": "tech"},
-    )
-
-    book_key = response.json()["book_key"]
+def test_change_book_status_invalid(client, created_book):
+    book_key = created_book["book_key"]
     update_response = client.post(
         f"/books/{book_key}/status", params={"status_enum": "invalid"}
     )

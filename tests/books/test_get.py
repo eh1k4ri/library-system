@@ -22,40 +22,28 @@ def test_get_books_empty_list(client):
     assert len(response.json()) == 0
 
 
-def test_get_book_by_key(client):
-    create_response = client.post(
-        "/books/",
-        json={"title": "Python 101", "author": "John Doe", "genre": "Programming"},
-    )
-
-    assert create_response.status_code == 201
-
-    book_key = create_response.json()["book_key"]
+def test_get_book_by_key(client, created_book):
+    book_key = created_book["book_key"]
     response = client.get(f"/books/{book_key}")
 
     assert response.status_code == 200
 
     data = response.json()
     assert data["book_key"] == book_key
-    assert data["title"] == "Python 101"
-    assert data["author"] == "John Doe"
+    assert data["title"] == created_book["title"]
+    assert data["author"] == created_book["author"]
 
 
 def test_get_book_not_found(client):
     fake_key = str(uuid.uuid4())
     response = client.get(f"/books/{fake_key}")
+
     assert response.status_code == 404
     assert response.json()["detail"]["code"] == "LBS001"
 
 
-def test_get_availability(client):
-    response = client.post(
-        "/books/",
-        json={"title": "Avail Book", "author": "Author A", "genre": "Fiction"},
-    )
-    assert response.status_code == 201
-
-    book_key = response.json()["book_key"]
+def test_get_availability(client, created_book, created_user):
+    book_key = created_book["book_key"]
     availability = client.get(f"/books/{book_key}/availability")
     assert availability.status_code == 200
 
@@ -63,11 +51,7 @@ def test_get_availability(client):
     assert data["available"] is True
     assert data["status"] == "available"
 
-    user_response = client.post(
-        "/users/", json={"name": "Loan User", "email": "loanuser2@example.com"}
-    )
-    assert user_response.status_code == 201
-    user_key = user_response.json()["user_key"]
+    user_key = created_user["user_key"]
 
     book_response = client.post(
         "/books/",
@@ -109,7 +93,7 @@ def test_get_books_filter_by_genre(client):
     assert response.status_code == 200
     data = response.json()
     assert len(data) == 1
-    assert all(b["genre"].lower() == "fantasy" for b in data)
+    assert all(book["genre"].lower() == "fantasy" for book in data)
 
 
 def test_get_genres(client):
@@ -119,4 +103,4 @@ def test_get_genres(client):
     response = client.get("/books/genres")
     assert response.status_code == 200
     genres = response.json()
-    assert set([g.lower() for g in genres]).issuperset({"drama", "horror"})
+    assert set([genre.lower() for genre in genres]).issuperset({"drama", "horror"})
