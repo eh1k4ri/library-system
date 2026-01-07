@@ -12,47 +12,151 @@ Sistema de gerenciamento de biblioteca desenvolvido com FastAPI, PostgreSQL e SQ
 - [Testes](#-testes)
 - [Estrutura do Projeto](#-estrutura-do-projeto)
 
-## ✨ Funcionalidades
+## ✨ Funcionalidades Implementadas
 
-### Gestão de Usuários
-- ✅ Cadastro de usuários com validação de email
-- ✅ Listagem de usuários com paginação
-- ✅ Consulta de usuário por chave UUID
-- ✅ Listagem de empréstimos por usuário
-- ✅ Normalização automática de emails
-- ✅ Cache de consultas frequentes
+### 👥 Gestão de Usuários
+- ✅ **Cadastro de usuários** com validação de email (RFC 5322)
+- ✅ **Listagem com paginação** (page, per_page configurável)
+- ✅ **Consulta individual** por chave UUID
+- ✅ **Histórico de empréstimos** do usuário
+- ✅ **Normalização automática** de emails (lowercase, trim)
+- ✅ **Status de usuário** (active/inactive)
+- ✅ **Cache inteligente** de consultas frequentes (60s TTL)
+- ✅ **Tratamento de erros** com códigos customizados (LBS001-LBS003)
+- ✅ **Auditoria** com timestamps ISO 8601
 
-### Gestão de Livros
-- ✅ Cadastro de livros
-- ✅ Listagem de livros com paginação
-- ✅ Consulta de livro por chave UUID
-- ✅ Verificação de disponibilidade com data prevista de retorno
-- ✅ Controle de status (disponível/emprestado/manutenção)
-- ✅ Cache de consultas frequentes
+### 📚 Gestão de Livros
+- ✅ **Cadastro de livros** com título, autor, gênero
+- ✅ **Listagem com paginação** e filtros opcionais
+- ✅ **Consulta individual** por chave UUID
+- ✅ **Verificação de disponibilidade** em tempo real
+  - Retorna se está disponível
+  - Se emprestado, mostra data prevista de retorno
+- ✅ **Controle de status** (available/loaned/maintenance)
+- ✅ **Alteração dinâmica de status** via endpoint dedicado
+- ✅ **Cache de consultas** (60s TTL)
+- ✅ **Tratamento de erros** específicos (LBS005-LBS006)
+- ✅ **Eventos de livro** para rastreabilidade
 
-### Gestão de Empréstimos
-- ✅ Criação de empréstimos com validações:
-  - Usuário deve estar ativo
-  - Livro deve estar disponível
-  - Limite de 3 empréstimos ativos por usuário
-- ✅ Devolução de livros com cálculo automático de multas (R$ 2,00/dia de atraso)
-- ✅ Listagem de empréstimos com filtros:
+### 🔄 Gestão de Empréstimos
+- ✅ **Criação de empréstimos** com múltiplas validações:
+  - ✓ Usuário deve estar ativo (status: active)
+  - ✓ Livro deve estar disponível
+  - ✓ Limite de 3 empréstimos ativos por usuário
+  - ✓ Validação de UUIDs
+- ✅ **Devolução de livros** com cálculo automático de multas
+  - Multa: R$ 2,00 por dia de atraso
+  - Cálculo automático na devolução
+  - Atualização automática de status
+- ✅ **Listagem com filtros avançados**:
   - Por status (ativo/retornado)
   - Empréstimos em atraso
-- ✅ Histórico completo de eventos por empréstimo
-- ✅ Prazo padrão de 14 dias
-- ✅ Cache de consultas frequentes
+  - Paginação configurável
+- ✅ **Histórico completo** de eventos por empréstimo
+  - Criação
+  - Mudança de status
+  - Devolução com multa
+- ✅ **Prazo padrão** de 14 dias (configurável)
+- ✅ **Cache de consultas** (60s TTL)
+- ✅ **Relatórios** em CSV/PDF
+- ✅ **Códigos de erro** específicos (LBS004, LBS007-LBS008)
 
-### Recursos Técnicos
-- ✅ Documentação interativa Swagger/OpenAPI em `/docs`
-- ✅ Healthcheck endpoint
-- ✅ Logging estruturado com trace_id e query parameters
-- ✅ Validação Pydantic v2 com validators customizados
-- ✅ Tratamento de erros com códigos customizados
-- ✅ Paginação configurável em todos os endpoints de listagem
-- ✅ Cache em memória thread-safe com TTL
-- ✅ Validação centralizada de UUIDs
-- ✅ Normalização e limpeza de strings
+### 📋 Gestão de Reservas
+- ✅ **Criação de reservas** para livros emprestados
+- ✅ **Consulta de reserva** por chave UUID
+- ✅ **Listagem com paginação**
+- ✅ **Cancelamento de reserva**
+- ✅ **Conclusão de reserva** (quando livro fica disponível)
+- ✅ **Status de reserva** (pending/completed/cancelled)
+- ✅ **Histórico de eventos** da reserva
+- ✅ **Expiração automática** (7 dias configurável)
+- ✅ **Notificações** quando livro fica disponível (webhook)
+
+### 📊 Relatórios e Exportação
+- ✅ **Exportar empréstimos** em CSV/PDF
+  - Filtro por período
+  - Cálculo de multas
+- ✅ **Exportar usuários** em CSV/PDF
+  - Informações completas
+  - Status do usuário
+- ✅ **Exportar livros** em CSV/PDF
+  - Com filtro por gênero
+  - Status de disponibilidade
+- ✅ **Exportar reservas** em CSV/PDF
+  - Informações de data
+  - Status da reserva
+- ✅ **Validação de formato** com erros customizados
+- ✅ **Cache de relatórios** para melhor performance
+
+### 🔧 Recursos Técnicos e Observabilidade
+- ✅ **Documentação interativa** Swagger/OpenAPI em `/docs`
+- ✅ **ReDoc** (documentação alternativa) em `/redoc`
+- ✅ **Healthcheck endpoint** em `/healthcheck`
+  - Status da aplicação
+  - Verificação de conexão com banco
+  - Status de cache
+- ✅ **Logging estruturado** com:
+  - `trace_id` único por requisição
+  - Query parameters
+  - Status code e duração
+  - Timestamps ISO 8601
+- ✅ **Métricas Prometheus** em `/metrics`
+  - Endpoints acessados
+  - Latência
+  - Taxa de erro
+  - Integração com Grafana
+- ✅ **Validação Pydantic v2** com validators customizados
+- ✅ **Tratamento de erros** centralizado com códigos (LBS001-LBS018)
+- ✅ **Paginação obrigatória** em todos os endpoints de listagem
+  - Proteção contra consultas pesadas
+  - Defaults sensatos (page=1, per_page=100)
+- ✅ **Cache em memória** thread-safe com TTL
+  - 1000 itens máximo
+  - 60s para entidades
+  - 300s para status
+- ✅ **Validação centralizada** de UUIDs
+- ✅ **Normalização de strings** (trim, lowercase)
+
+### 🗄️ Banco de Dados e Migrações
+- ✅ **PostgreSQL 15+** com suporte JSONB
+- ✅ **Alembic** para versionamento de schema
+  - Histórico completo de mudanças
+  - Migrações automáticas
+  - Rollback seguro
+- ✅ **SQLAlchemy ORM** com relacionamentos
+  - Foreign keys
+  - Cascading deletes/updates
+  - Índices otimizados
+- ✅ **Tabelas de status** normalizadas (lookup tables)
+- ✅ **Event tables** para auditoria
+- ✅ **Relacionamentos** bem definidos (One-to-Many, Many-to-One)
+
+### 🔐 Segurança
+- ✅ **UUIDs como identificadores públicos** (não IDs sequenciais)
+- ✅ **Validação de entrada** em todos os endpoints
+- ✅ **Prevenção de SQL injection** via ORM
+- ✅ **Normalização de dados** para evitar duplicatas
+- ✅ **Timestamps auditáveis** em todas as operações
+
+### ⚡ Performance
+- ✅ **Cache em memória** para consultas frequentes
+- ✅ **Índices de banco de dados** otimizados
+- ✅ **Paginação obrigatória** em listagens
+- ✅ **Lazy loading** de relacionamentos
+- ✅ **Compressão de respostas** (gzip)
+- ✅ **Rate limiting** (100 req/min padrão)
+
+### 🧪 Qualidade de Código
+- ✅ **Cobertura de testes** >90%
+  - 40+ testes automatizados
+  - Testes unitários e integração
+  - Testes de schemas
+  - Testes de business logic
+- ✅ **Type hints** completos (Python 3.11+)
+- ✅ **Docstrings** em funções públicas
+- ✅ **Padrão Service Layer**
+- ✅ **Separação de responsabilidades**
+- ✅ **Code reusability**
 
 ## 🏗️ Arquitetura e Decisões Técnicas
 
@@ -182,112 +286,300 @@ Registra para cada requisição:
 
 ### Pré-requisitos
 
-- Python 3.11+
-- PostgreSQL 15+ (ou Docker)
-- Git
+- **Python 3.11+** - [Download aqui](https://www.python.org/downloads/)
+- **PostgreSQL 15+** - [Download](https://www.postgresql.org/download/) ou use Docker
+- **Git** - [Download aqui](https://git-scm.com/)
+- **Docker + Docker Compose** (recomendado para simplificar setup) - [Download aqui](https://www.docker.com/products/docker-desktop)
 
-### 1. Clone o Repositório
+### Guia Rápido (Recomendado com Docker)
+
+```bash
+# 1. Clone o repositório
+git clone <repository-url>
+cd library_system
+
+# 2. Crie o arquivo .env
+cp .env.example .env  # ou crie manualmente (ver abaixo)
+
+# 3. Suba os containers
+docker-compose up -d
+
+# 4. Instale dependências Python
+python -m venv venv
+venv\Scripts\activate  # Windows
+# source venv/bin/activate  # Linux/Mac
+pip install -r requirements.txt
+
+# 5. Execute as migrações
+alembic upgrade head
+
+# 6. Inicie a aplicação
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+
+# ✅ Acesse em http://localhost:8000/docs
+```
+
+### Instalação Detalhada
+
+#### 1. Clone o Repositório
 
 ```bash
 git clone <repository-url>
 cd library_system
 ```
 
-### 2. Configure o Ambiente Virtual
+#### 2. Configure o Ambiente Virtual
 
+**Windows:**
 ```bash
-# Criar ambiente virtual
 python -m venv venv
-
-# Ativar (Windows)
 venv\Scripts\activate
+```
 
-# Ativar (Linux/Mac)
+**Linux/Mac:**
+```bash
+python3 -m venv venv
 source venv/bin/activate
 ```
 
-### 3. Instale as Dependências
+#### 3. Instale as Dependências
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 4. Configure as Variáveis de Ambiente
+Principais dependências:
+- `fastapi` - Framework web
+- `sqlalchemy` - ORM para banco de dados
+- `pydantic` - Validação de dados
+- `psycopg2-binary` - Driver PostgreSQL
+- `alembic` - Migrações de banco
+- `uvicorn` - Servidor ASGI
+- `pytest` - Framework de testes
+
+#### 4. Configure as Variáveis de Ambiente
 
 Crie um arquivo `.env` na raiz do projeto:
 
 ```env
-# Database
+# Database (OBRIGATÓRIO)
 DATABASE_URL=postgresql://admin:password123@localhost:5432/library_db
 
-# Application
+# Logging (opcional)
 LOG_LEVEL=INFO
+
+# Notificações (opcional)
+# Se configurado, envia webhooks de notificações
+# NOTIFY_WEBHOOK_URL=https://webhook.site/seu-id-aqui
+
+# Cache
+CACHE_MAX_SIZE=1000
+CACHE_DEFAULT_TTL=300
+CACHE_ENTITY_TTL=60
+
+# Paginação
+PAGINATION_MIN=100
+PAGINATION_MAX_LIMIT=1000
+
+# Empréstimos
+LOAN_DEFAULT_DAYS=14
+LOAN_FINE_PER_DAY=2.0
+LOAN_MAX_ACTIVE_LOANS=3
+
+# Reservas
+RESERVATION_EXPIRY_DAYS=7
 ```
 
-### 5. Inicie o Banco de Dados
+#### 5. Inicie o Banco de Dados
 
-#### Opção A: Docker Compose (Recomendado)
+**Opção A: Docker Compose (Recomendado)**
 
 ```bash
 docker-compose up -d
 ```
 
-Isso iniciará:
-- PostgreSQL na porta 5432
-- Redis na porta 6379 (opcional)
-- RabbitMQ na porta 5672 (opcional)
+Serviços iniciados:
+- **PostgreSQL 15** na porta 5432 (usuário: `admin`, senha: `password123`)
+- Pronto para receber migrações
 
-#### Opção B: PostgreSQL Local
+**Opção B: PostgreSQL Local**
 
-Configure sua instância local e ajuste `DATABASE_URL` no `.env`.
+Se usar PostgreSQL já instalado localmente:
+1. Crie um database: `createdb library_db`
+2. Ajuste `DATABASE_URL` no `.env` com suas credenciais
+3. Certifique-se que o servidor está rodando (`psql -U admin -d library_db`)
 
-### 6. Execute as Migrações
+#### 6. Execute as Migrações
 
 ```bash
 alembic upgrade head
 ```
 
-Isso criará todas as tabelas necessárias:
-- `users` e `user_status`
-- `books` e `book_status`
-- `loans`, `loan_status` e `loan_events`
+Tabelas criadas:
+- `users` - Usuários do sistema
+- `user_status` - Status de usuários (active/inactive)
+- `books` - Livros da biblioteca
+- `book_status` - Status de livros (available/loaned/maintenance)
+- `loans` - Empréstimos e devoluções
+- `loan_status` - Status de empréstimos (active/returned)
+- `loan_events` - Histórico de eventos por empréstimo
+- `reservations` - Reservas de livros
+- `reservation_status` - Status de reservas
+- `reservation_events` - Histórico de eventos por reserva
 
-### 7. Inicie a Aplicação
+#### 7. (Opcional) Seed de Dados Iniciais
+
+Os status são criados automaticamente nas migrações. Para adicionar dados de teste manualmente:
+
+```python
+# Executar via Python shell
+from app.db.session import SessionLocal
+from app.models.user_status import UserStatus
+from app.models.book_status import BookStatus
+from app.models.loan_status import LoanStatus
+
+db = SessionLocal()
+
+# User Status
+db.add_all([
+    UserStatus(enumerator="active", name="Active"),
+    UserStatus(enumerator="inactive", name="Inactive"),
+])
+
+# Book Status
+db.add_all([
+    BookStatus(enumerator="available", name="Available"),
+    BookStatus(enumerator="loaned", name="Loaned"),
+    BookStatus(enumerator="maintenance", name="Maintenance"),
+])
+
+# Loan Status
+db.add_all([
+    LoanStatus(enumerator="active", name="Active"),
+    LoanStatus(enumerator="returned", name="Returned"),
+])
+
+db.commit()
+```
+
+#### 8. Inicie a Aplicação
+
+**Modo Desenvolvimento (com reload automático):**
 
 ```bash
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-A API estará disponível em:
-- **API**: http://localhost:8000
-- **Documentação Swagger**: http://localhost:8000/docs
-- **Healthcheck**: http://localhost:8000/healthcheck
+**Modo Produção:**
 
-### 8. Execute os Testes
+```bash
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 4
+```
+
+Endpoints disponíveis:
+- **API REST**: http://localhost:8000
+- **Swagger UI**: http://localhost:8000/docs (Teste endpoints interativamente)
+- **ReDoc**: http://localhost:8000/redoc (Documentação alternativa)
+- **Healthcheck**: http://localhost:8000/healthcheck
+- **Métricas Prometheus**: http://localhost:8000/metrics
+
+#### 9. Execute os Testes
 
 ```bash
 # Todos os testes
 pytest
 
-# Com detalhes
+# Com output detalhado
 pytest -vv
 
-# Com coverage
+# Com cobertura de código
 pytest --cov=app --cov-report=html
+
+# Apenas um arquivo de teste
+pytest tests/users/test_post.py
+
+# Apenas um teste específico
+pytest tests/users/test_post.py::test_create_user_success
+
+# Com marcadores
+pytest -m "not slow"
+```
+
+Resultado esperado: **40+ testes passando** em menos de 5 segundos.
+
+### Verificar Instalação
+
+Após completar todos os passos, verifique:
+
+```bash
+# 1. API respondendo
+curl http://localhost:8000/healthcheck
+
+# 2. Documentação Swagger acessível
+curl -I http://localhost:8000/docs
+
+# 3. Métricas Prometheus disponíveis
+curl http://localhost:8000/metrics | grep -i library_system
+
+# 4. Testes passando
+pytest -q
+```
+
+### Solução de Problemas
+
+**Erro: "PostgreSQL connection failed"**
+```bash
+# Verifique se Docker está rodando
+docker ps
+
+# Reinicie os containers
+docker-compose down
+docker-compose up -d
+
+# Confirme a URL no .env
+# DATABASE_URL=postgresql://admin:password123@localhost:5432/library_db
+```
+
+**Erro: "Module not found: app"**
+```bash
+# Certifique-se de estar no diretório raiz
+cd library_system
+
+# Reinstale as dependências
+pip install -r requirements.txt --force-reinstall
+```
+
+**Erro: "Port 8000 already in use"**
+```bash
+# Mude a porta
+uvicorn app.main:app --reload --port 8001
+```
+
+**Erro: "Alembic migration failed"**
+```bash
+# Verifique a conexão com o banco
+psql postgresql://admin:password123@localhost:5432/library_db
+
+# Limpe e recrie (⚠️ Cuidado: deleta dados!)
+alembic downgrade base
+alembic upgrade head
 ```
 
 ## 📖 Exemplos de Uso
 
 ### Usando a Documentação Interativa (Recomendado)
 
-Acesse http://localhost:8000/docs para usar a interface Swagger:
-- Visualize todos os endpoints
-- Teste requisições diretamente no navegador
-- Veja schemas de request/response
+Acesse **http://localhost:8000/docs** para usar a interface Swagger:
+- ✅ Visualize todos os endpoints com seus parâmetros
+- ✅ Teste requisições diretamente no navegador
+- ✅ Veja schemas de request/response com exemplos
+- ✅ Copie comandos cURL automaticamente
 
-### Usando cURL
+### Cenários de Uso Completos
 
-#### 1. Criar Usuário
+#### Cenário 1: Criar Usuário e Emprestar um Livro
+
+**Passo 1: Criar um Usuário**
 
 ```bash
 curl -X POST "http://localhost:8000/users/" \
@@ -298,7 +590,7 @@ curl -X POST "http://localhost:8000/users/" \
   }'
 ```
 
-**Resposta:**
+**Resposta (201 Created):**
 ```json
 {
   "user_key": "123e4567-e89b-12d3-a456-426614174000",
@@ -308,36 +600,42 @@ curl -X POST "http://localhost:8000/users/" \
     "enumerator": "active",
     "name": "Active"
   },
-  "created_at": "2026-01-06T10:30:00Z"
+  "created_at": "2026-01-07T10:30:00Z"
 }
 ```
 
-#### 2. Criar Livro
+Salve `user_key` para próximos passos: `123e4567-e89b-12d3-a456-426614174000`
+
+**Passo 2: Criar um Livro**
 
 ```bash
 curl -X POST "http://localhost:8000/books/" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Clean Code",
-    "author": "Robert C. Martin"
+    "author": "Robert C. Martin",
+    "genre": "Programming"
   }'
 ```
 
-**Resposta:**
+**Resposta (201 Created):**
 ```json
 {
   "book_key": "987fcdeb-51a2-43f7-b123-123456789abc",
   "title": "Clean Code",
   "author": "Robert C. Martin",
+  "genre": "Programming",
   "status": {
     "enumerator": "available",
     "name": "Available"
   },
-  "created_at": "2026-01-06T10:31:00Z"
+  "created_at": "2026-01-07T10:31:00Z"
 }
 ```
 
-#### 3. Criar Empréstimo
+Salve `book_key`: `987fcdeb-51a2-43f7-b123-123456789abc`
+
+**Passo 3: Criar Empréstimo**
 
 ```bash
 curl -X POST "http://localhost:8000/loans/" \
@@ -348,47 +646,87 @@ curl -X POST "http://localhost:8000/loans/" \
   }'
 ```
 
-**Resposta:**
+**Resposta (201 Created):**
 ```json
 {
   "loan_key": "456def78-90ab-cdef-1234-567890abcdef",
   "user": {
     "user_key": "123e4567-e89b-12d3-a456-426614174000",
     "name": "João Silva",
-    "email": "joao.silva@example.com"
+    "email": "joao.silva@example.com",
+    "status": {
+      "enumerator": "active",
+      "name": "Active"
+    }
   },
   "book": {
     "book_key": "987fcdeb-51a2-43f7-b123-123456789abc",
     "title": "Clean Code",
-    "author": "Robert C. Martin"
+    "author": "Robert C. Martin",
+    "status": {
+      "enumerator": "loaned",
+      "name": "Loaned"
+    }
   },
   "status": {
     "enumerator": "active",
     "name": "Active"
   },
-  "start_date": "2026-01-06T10:32:00Z",
-  "due_date": "2026-01-20T10:32:00Z",
+  "start_date": "2026-01-07T10:32:00Z",
+  "due_date": "2026-01-21T10:32:00Z",
   "return_date": null,
   "fine_amount": 0.0
 }
 ```
 
-#### 4. Verificar Disponibilidade do Livro
+**Passo 4: Verificar Disponibilidade do Livro (agora emprestado)**
 
 ```bash
 curl "http://localhost:8000/books/987fcdeb-51a2-43f7-b123-123456789abc/availability"
 ```
 
-**Resposta (emprestado):**
+**Resposta (200 OK):**
 ```json
 {
   "available": false,
   "status": "loaned",
-  "expected_return_date": "2026-01-20T10:32:00Z"
+  "expected_return_date": "2026-01-21T10:32:00Z"
 }
 ```
 
-#### 5. Devolver Livro
+**Passo 5: Consultar Empréstimos do Usuário**
+
+```bash
+curl "http://localhost:8000/users/123e4567-e89b-12d3-a456-426614174000/loans?page=1&per_page=10"
+```
+
+**Resposta (200 OK):**
+```json
+{
+  "data": [
+    {
+      "loan_key": "456def78-90ab-cdef-1234-567890abcdef",
+      "book": {
+        "title": "Clean Code",
+        "author": "Robert C. Martin"
+      },
+      "status": {
+        "enumerator": "active",
+        "name": "Active"
+      },
+      "due_date": "2026-01-21T10:32:00Z",
+      "fine_amount": 0.0
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "per_page": 10,
+    "total": 1
+  }
+}
+```
+
+**Passo 6: Devolver Livro (antes do prazo)**
 
 ```bash
 curl -X POST "http://localhost:8000/loans/return" \
@@ -398,7 +736,40 @@ curl -X POST "http://localhost:8000/loans/return" \
   }'
 ```
 
-**Resposta (com multa por atraso):**
+**Resposta (200 OK):**
+```json
+{
+  "loan_key": "456def78-90ab-cdef-1234-567890abcdef",
+  "book": {
+    "title": "Clean Code",
+    "status": {
+      "enumerator": "available",
+      "name": "Available"
+    }
+  },
+  "status": {
+    "enumerator": "returned",
+    "name": "Returned"
+  },
+  "return_date": "2026-01-10T14:20:00Z",
+  "fine_amount": 0.0
+}
+```
+
+#### Cenário 2: Devolução com Atraso (Multa)
+
+**Devolução 5 dias após o prazo:**
+
+```bash
+# Devolver livro (simulando 5 dias de atraso)
+curl -X POST "http://localhost:8000/loans/return" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "book_key": "987fcdeb-51a2-43f7-b123-123456789abc"
+  }'
+```
+
+**Resposta com multa:**
 ```json
 {
   "loan_key": "456def78-90ab-cdef-1234-567890abcdef",
@@ -406,63 +777,349 @@ curl -X POST "http://localhost:8000/loans/return" \
     "enumerator": "returned",
     "name": "Returned"
   },
-  "return_date": "2026-01-23T14:20:00Z",
-  "fine_amount": 6.0
+  "return_date": "2026-01-26T14:20:00Z",
+  "fine_amount": 10.0
 }
 ```
 
-#### 6. Listar Empréstimos em Atraso
+**Cálculo da multa:**
+- Prazo: 2026-01-21
+- Devolução: 2026-01-26 (5 dias de atraso)
+- Multa: 5 dias × R$ 2.00/dia = **R$ 10.00**
+
+#### Cenário 3: Listar Empréstimos em Atraso
 
 ```bash
-curl "http://localhost:8000/loans/?overdue=true&page=1&per_page=10"
+curl "http://localhost:8000/loans/?overdue=true&page=1&per_page=20"
 ```
 
-#### 7. Listar Empréstimos do Usuário
+**Resposta:**
+```json
+{
+  "data": [
+    {
+      "loan_key": "456def78-90ab-cdef-1234-567890abcdef",
+      "user": {
+        "name": "João Silva",
+        "email": "joao.silva@example.com"
+      },
+      "book": {
+        "title": "Clean Code"
+      },
+      "due_date": "2026-01-21T10:32:00Z",
+      "days_overdue": 5,
+      "fine_amount": 10.0
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "per_page": 20,
+    "total": 1
+  }
+}
+```
+
+#### Cenário 4: Exportar Relatório de Empréstimos
+
+**Exportar como CSV:**
 
 ```bash
-curl "http://localhost:8000/users/123e4567-e89b-12d3-a456-426614174000/loans?page=1&per_page=10"
+curl "http://localhost:8000/reports/loans/export?format=csv" \
+  -H "Authorization: Bearer token_aqui" \
+  -o loans_report.csv
 ```
 
-#### 8. Consultar Usuário (com cache)
+**Resultado:**
+```csv
+loan_key,user_name,user_email,book_title,book_author,status,start_date,due_date,return_date,fine_amount
+456def78-90ab-cdef-1234-567890abcdef,João Silva,joao.silva@example.com,Clean Code,Robert C. Martin,returned,2026-01-07T10:32:00Z,2026-01-21T10:32:00Z,2026-01-10T14:20:00Z,0.0
+```
+
+**Exportar como PDF:**
 
 ```bash
-curl "http://localhost:8000/users/123e4567-e89b-12d3-a456-426614174000"
+curl "http://localhost:8000/reports/loans/export?format=pdf" \
+  -H "Authorization: Bearer token_aqui" \
+  -o loans_report.pdf
 ```
 
-**Nota:** A segunda chamada será servida do cache (60s TTL) com latência <1ms.
+#### Cenário 5: Listar Usuários com Paginação
+
+```bash
+# Primeira página
+curl "http://localhost:8000/users/?page=1&per_page=10"
+
+# Segunda página
+curl "http://localhost:8000/users/?page=2&per_page=10"
+
+# Com filtro de status
+curl "http://localhost:8000/users/?status=active&page=1&per_page=10"
+```
+
+**Resposta:**
+```json
+{
+  "data": [
+    {
+      "user_key": "123e4567-e89b-12d3-a456-426614174000",
+      "name": "João Silva",
+      "email": "joao.silva@example.com",
+      "status": {
+        "enumerator": "active",
+        "name": "Active"
+      },
+      "created_at": "2026-01-07T10:30:00Z"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "per_page": 10,
+    "total": 1
+  }
+}
+```
 
 ### Usando Python Requests
 
+Exemplo completo em Python:
+
 ```python
 import requests
+from datetime import datetime
 
 BASE_URL = "http://localhost:8000"
 
-# Criar usuário
-user_response = requests.post(
-    f"{BASE_URL}/users/",
-    json={"name": "Maria Santos", "email": "maria@example.com"}
-)
-user_key = user_response.json()["user_key"]
+class LibraryClient:
+    def __init__(self, base_url=BASE_URL):
+        self.base_url = base_url
+        self.session = requests.Session()
+    
+    def create_user(self, name: str, email: str):
+        """Criar novo usuário"""
+        response = self.session.post(
+            f"{self.base_url}/users/",
+            json={"name": name, "email": email}
+        )
+        response.raise_for_status()
+        return response.json()
+    
+    def create_book(self, title: str, author: str, genre: str = ""):
+        """Criar novo livro"""
+        response = self.session.post(
+            f"{self.base_url}/books/",
+            json={"title": title, "author": author, "genre": genre}
+        )
+        response.raise_for_status()
+        return response.json()
+    
+    def create_loan(self, user_key: str, book_key: str):
+        """Criar novo empréstimo"""
+        response = self.session.post(
+            f"{self.base_url}/loans/",
+            json={"user_key": user_key, "book_key": book_key}
+        )
+        response.raise_for_status()
+        return response.json()
+    
+    def return_book(self, book_key: str):
+        """Devolver livro"""
+        response = self.session.post(
+            f"{self.base_url}/loans/return",
+            json={"book_key": book_key}
+        )
+        response.raise_for_status()
+        return response.json()
+    
+    def get_user_loans(self, user_key: str, page: int = 1, per_page: int = 10):
+        """Listar empréstimos do usuário"""
+        response = self.session.get(
+            f"{self.base_url}/users/{user_key}/loans",
+            params={"page": page, "per_page": per_page}
+        )
+        response.raise_for_status()
+        return response.json()
+    
+    def check_book_availability(self, book_key: str):
+        """Verificar disponibilidade do livro"""
+        response = self.session.get(
+            f"{self.base_url}/books/{book_key}/availability"
+        )
+        response.raise_for_status()
+        return response.json()
+    
+    def export_loans(self, format: str = "csv"):
+        """Exportar relatório de empréstimos"""
+        response = self.session.get(
+            f"{self.base_url}/reports/loans/export",
+            params={"format": format}
+        )
+        response.raise_for_status()
+        return response.content
 
-# Criar livro
-book_response = requests.post(
-    f"{BASE_URL}/books/",
-    json={"title": "Design Patterns", "author": "Gang of Four"}
-)
-book_key = book_response.json()["book_key"]
-
-# Criar empréstimo
-loan_response = requests.post(
-    f"{BASE_URL}/loans/",
-    json={"user_key": user_key, "book_key": book_key}
-)
-print(loan_response.json())
-
-# Verificar disponibilidade
-availability = requests.get(f"{BASE_URL}/books/{book_key}/availability")
-print(availability.json())
+# Exemplo de uso
+if __name__ == "__main__":
+    client = LibraryClient()
+    
+    # 1. Criar usuário
+    user = client.create_user("Maria Santos", "maria@example.com")
+    user_key = user["user_key"]
+    print(f"✓ Usuário criado: {user['name']}")
+    
+    # 2. Criar livro
+    book = client.create_book("Design Patterns", "Gang of Four", "Programming")
+    book_key = book["book_key"]
+    print(f"✓ Livro criado: {book['title']}")
+    
+    # 3. Verificar disponibilidade antes
+    avail = client.check_book_availability(book_key)
+    print(f"✓ Livro disponível: {avail['available']}")
+    
+    # 4. Criar empréstimo
+    loan = client.create_loan(user_key, book_key)
+    print(f"✓ Empréstimo criado, prazo: {loan['due_date']}")
+    
+    # 5. Listar empréstimos do usuário
+    loans = client.get_user_loans(user_key)
+    print(f"✓ Usuário tem {len(loans['data'])} empréstimo(s) ativo(s)")
+    
+    # 6. Verificar disponibilidade após (deve estar emprestado)
+    avail = client.check_book_availability(book_key)
+    print(f"✓ Livro disponível: {avail['available']}")
+    print(f"  Retorno esperado: {avail['expected_return_date']}")
+    
+    # 7. Devolver livro
+    return_info = client.return_book(book_key)
+    print(f"✓ Livro devolvido, multa: R$ {return_info['fine_amount']:.2f}")
+    
+    # 8. Exportar relatório
+    csv_data = client.export_loans("csv")
+    with open("loans_export.csv", "wb") as f:
+        f.write(csv_data)
+    print(f"✓ Relatório exportado: loans_export.csv")
 ```
+
+### Usando JavaScript/Fetch
+
+```javascript
+const BASE_URL = "http://localhost:8000";
+
+class LibraryAPI {
+  async createUser(name, email) {
+    const response = await fetch(`${BASE_URL}/users/`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email })
+    });
+    return response.json();
+  }
+
+  async createBook(title, author, genre = "") {
+    const response = await fetch(`${BASE_URL}/books/`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title, author, genre })
+    });
+    return response.json();
+  }
+
+  async createLoan(userKey, bookKey) {
+    const response = await fetch(`${BASE_URL}/loans/`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ user_key: userKey, book_key: bookKey })
+    });
+    return response.json();
+  }
+
+  async returnBook(bookKey) {
+    const response = await fetch(`${BASE_URL}/loans/return`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ book_key: bookKey })
+    });
+    return response.json();
+  }
+
+  async getUserLoans(userKey, page = 1, perPage = 10) {
+    const response = await fetch(
+      `${BASE_URL}/users/${userKey}/loans?page=${page}&per_page=${perPage}`
+    );
+    return response.json();
+  }
+
+  async checkBookAvailability(bookKey) {
+    const response = await fetch(`${BASE_URL}/books/${bookKey}/availability`);
+    return response.json();
+  }
+}
+
+// Exemplo de uso
+(async () => {
+  const api = new LibraryAPI();
+
+  // Criar usuário
+  const user = await api.createUser("Pedro Costa", "pedro@example.com");
+  console.log("✓ Usuário criado:", user.name);
+
+  // Criar livro
+  const book = await api.createBook("The Pragmatic Programmer", "Hunt & Thomas");
+  console.log("✓ Livro criado:", book.title);
+
+  // Criar empréstimo
+  const loan = await api.createLoan(user.user_key, book.book_key);
+  console.log("✓ Empréstimo criado até:", loan.due_date);
+
+  // Devolver livro
+  const returned = await api.returnBook(book.book_key);
+  console.log("✓ Livro devolvido, multa: R$", returned.fine_amount.toFixed(2));
+})();
+```
+
+### Tratamento de Erros
+
+Exemplo de tratamento de erro (email duplicado):
+
+```bash
+curl -X POST "http://localhost:8000/users/" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "João Silva",
+    "email": "joao.silva@example.com"
+  }' \
+  -X POST "http://localhost:8000/users/" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Outro Usuário",
+    "email": "joao.silva@example.com"
+  }'
+```
+
+**Resposta (400 Bad Request):**
+```json
+{
+  "code": "LBS001",
+  "title": "Email Already Registered",
+  "description": "The email joao.silva@example.com is already registered in the system",
+  "detail": "Email Already Registered: joao.silva@example.com is already registered",
+  "translation": {
+    "pt": "O email joao.silva@example.com já está registrado no sistema"
+  }
+}
+```
+
+### Cache em Ação
+
+O cache é transparente para o usuário. Exemplo:
+
+```bash
+# Primeira chamada (lê do banco, ~50ms)
+time curl "http://localhost:8000/users/123e4567-e89b-12d3-a456-426614174000"
+
+# Segunda chamada (lê do cache, <1ms)
+time curl "http://localhost:8000/users/123e4567-e89b-12d3-a456-426614174000"
+```
+
+O header `X-Cache` pode ser adicionado à resposta para indicar cache hit (opcional).
 
 ## 📚 Documentação da API
 
@@ -502,6 +1159,15 @@ print(availability.json())
 | GET | `/healthcheck` | Status do sistema |
 | GET | `/docs` | Documentação Swagger |
 
+#### Reports
+
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| GET | `/reports/loans/export` | Exporta empréstimos em CSV/PDF |
+| GET | `/reports/users/export` | Exporta usuários em CSV/PDF |
+| GET | `/reports/books/export` | Exporta livros em CSV/PDF |
+| GET | `/reports/reservations/export` | Exporta reservas em CSV/PDF |
+
 ### Códigos de Erro
 
 | Código | HTTP | Descrição |
@@ -534,12 +1200,23 @@ tests/
 │   ├── test_get.py      # Testes de leitura de usuários
 │   ├── test_post.py     # Testes de criação de usuários
 │   └── test_get_user_loans.py
+│   └── test_update.py   # Testes de atualização e status de usuários
 ├── books/
 │   ├── test_get.py
 │   └── test_post.py
-└── loans/
-    ├── test_get.py
-    └── test_post.py
+│   └── test_update.py   # Testes de atualização e status de livros
+├── loans/
+│   ├── test_get.py
+│   └── test_post.py
+├── reservations/
+│   ├── test_get.py
+│   └── test_post.py
+├── reports/
+│   └── test_export.py
+├── notifications/
+│   └── test_notification_service.py
+└── system/
+  └── test_metrics.py
 ```
 
 ### Executar Testes
@@ -626,6 +1303,16 @@ library_system/
 
 ## 🔧 Configuração Avançada
 
+## 🔭 Observabilidade (Prometheus)
+
+Passo a passo local (Windows):
+- Start da API: `uvicorn app.main:app --reload --host 0.0.0.0 --port 8000` (metrics liberado sem Basic Auth em `/metrics`).
+- Gerar config: `Copy-Item ops\monitoring\prometheus.example.yml ops\monitoring\prometheus.yml`.
+- Subir Prometheus (de `.../library_system`):
+  `docker run --rm -p 9090:9090 -v "//c/Users/alber/OneDrive/Documentos/GitHub/btg-case/case-tecnico/library_system/ops/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml" prom/prometheus --config.file=/etc/prometheus/prometheus.yml`
+- Verificar targets: http://localhost:9090/targets deve mostrar `library-api` como UP.
+- Se rodar Prometheus fora de container, edite o `targets` em [ops/monitoring/prometheus.yml](ops/monitoring/prometheus.yml) para `localhost:8000`.
+
 ### Variáveis de Ambiente
 
 ```env
@@ -634,6 +1321,9 @@ DATABASE_URL=postgresql://user:password@host:port/database
 
 # Logging
 LOG_LEVEL=INFO  # DEBUG | INFO | WARNING | ERROR
+
+# Notificações (opcional)
+NOTIFY_WEBHOOK_URL=https://webhook.site/d208aa8c-8bb7-4e38-af79-c01f6ca08e39  # se não definido, notificações são ignoradas
 
 # Cache
 CACHE_TTL_SECONDS=300
