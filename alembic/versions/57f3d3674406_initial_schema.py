@@ -357,6 +357,7 @@ def upgrade() -> None:
         """
         INSERT INTO book_status (enumerator, translation) VALUES
         ('available', 'Disponível'),
+        ('unavailable', 'Indisponível'),
         ('loaned', 'Emprestado')
     """
     )
