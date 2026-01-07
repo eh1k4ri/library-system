@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.openapi.utils import get_openapi
 from app.api.routers import (
     users,
     books,
@@ -18,10 +19,36 @@ from app.core.middlewares import (
 )
 
 configure_logging()
+
 app = FastAPI(
     title=APP_NAME,
     docs_url="/docs",
+    description="Library System API - Use Local Auth (default: admin/password123)",
+    swagger_ui_parameters={
+        "persistAuthorization": True,
+    },
 )
+
+
+def custom_openapi():
+    if app.openapi_schema:
+        return app.openapi_schema
+    openapi_schema = get_openapi(
+        title=APP_NAME,
+        version="1.0.0",
+        description="Library System API - Use Local Auth (default: admin/password123)",
+        routes=app.routes,
+    )
+    openapi_schema["components"]["securitySchemes"] = {
+        "basicAuth": {"type": "http", "scheme": "basic"}
+    }
+    openapi_schema["security"] = [{"basicAuth": []}]
+    app.openapi_schema = openapi_schema
+    return app.openapi_schema
+
+
+app.openapi = custom_openapi
+
 app.middleware("http")(basic_auth)
 app.middleware("http")(metrics_middleware)
 app.middleware("http")(rate_limit)
