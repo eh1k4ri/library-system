@@ -1,17 +1,25 @@
+import uuid
+
+
 def test_get_books_list(client):
     client.post(
         "/books/", json={"title": "Book 1", "author": "Author 1", "genre": "Tech"}
     )
+    client.post(
+        "/books/", json={"title": "Book 2", "author": "Author 2", "genre": "Tech"}
+    )
 
     response = client.get("/books/")
+
     assert response.status_code == 200
-    assert len(response.json()) >= 1
+    assert len(response.json()) == 2
 
 
 def test_get_books_empty_list(client):
     response = client.get("/books/")
+
     assert response.status_code == 200
-    assert isinstance(response.json(), list)
+    assert len(response.json()) == 0
 
 
 def test_get_book_by_key(client):
@@ -19,11 +27,14 @@ def test_get_book_by_key(client):
         "/books/",
         json={"title": "Python 101", "author": "John Doe", "genre": "Programming"},
     )
-    assert create_response.status_code == 201
-    book_key = create_response.json()["book_key"]
 
+    assert create_response.status_code == 201
+
+    book_key = create_response.json()["book_key"]
     response = client.get(f"/books/{book_key}")
+
     assert response.status_code == 200
+
     data = response.json()
     assert data["book_key"] == book_key
     assert data["title"] == "Python 101"
@@ -31,54 +42,55 @@ def test_get_book_by_key(client):
 
 
 def test_get_book_not_found(client):
-    fake_key = "00000000-0000-0000-0000-000000000000"
+    fake_key = str(uuid.uuid4())
     response = client.get(f"/books/{fake_key}")
     assert response.status_code == 404
     assert response.json()["detail"]["code"] == "LBS001"
 
 
 def test_get_availability(client):
-    resp = client.post(
+    response = client.post(
         "/books/",
         json={"title": "Avail Book", "author": "Author A", "genre": "Fiction"},
     )
-    assert resp.status_code == 201
-    book_key = resp.json()["book_key"]
+    assert response.status_code == 201
 
-    a = client.get(f"/books/{book_key}/availability")
-    assert a.status_code == 200
-    data = a.json()
+    book_key = response.json()["book_key"]
+    availability = client.get(f"/books/{book_key}/availability")
+    assert availability.status_code == 200
+
+    data = availability.json()
     assert data["available"] is True
     assert data["status"] == "available"
 
-    user_resp = client.post(
+    user_response = client.post(
         "/users/", json={"name": "Loan User", "email": "loanuser2@example.com"}
     )
-    assert user_resp.status_code == 201
-    user_key = user_resp.json()["user_key"]
+    assert user_response.status_code == 201
+    user_key = user_response.json()["user_key"]
 
-    book_resp = client.post(
+    book_response = client.post(
         "/books/",
         json={"title": "Loaned Book", "author": "Author B", "genre": "History"},
     )
-    assert book_resp.status_code == 201
-    loan_book_key = book_resp.json()["book_key"]
+    assert book_response.status_code == 201
+    loan_book_key = book_response.json()["book_key"]
 
-    loan_resp = client.post(
+    loan_response = client.post(
         "/loans/", json={"user_key": user_key, "book_key": loan_book_key}
     )
-    assert loan_resp.status_code == 201
+    assert loan_response.status_code == 201
 
-    a2 = client.get(f"/books/{loan_book_key}/availability")
-    assert a2.status_code == 200
-    data2 = a2.json()
+    new_availability = client.get(f"/books/{loan_book_key}/availability")
+    assert new_availability.status_code == 200
+    data2 = new_availability.json()
     assert data2["available"] is False
     assert data2["status"] == "loaned"
 
-    fake_key = "00000000-0000-0000-0000-000000000000"
-    resp_nf = client.get(f"/books/{fake_key}/availability")
-    assert resp_nf.status_code == 404
-    assert resp_nf.json()["detail"]["code"] == "LBS001"
+    fake_key = str(uuid.uuid4())
+    not_found_availability = client.get(f"/books/{fake_key}/availability")
+    assert not_found_availability.status_code == 404
+    assert not_found_availability.json()["detail"]["code"] == "LBS001"
 
     response = client.get("/books/?page=2&per_page=2")
     assert response.status_code == 200
@@ -93,10 +105,10 @@ def test_get_books_filter_by_genre(client):
         "/books/", json={"title": "Genre B", "author": "Auth B", "genre": "Sci-Fi"}
     )
 
-    r = client.get("/books/?genre=Fantasy")
-    assert r.status_code == 200
-    data = r.json()
-    assert len(data) >= 1
+    response = client.get("/books/?genre=Fantasy")
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) == 1
     assert all(b["genre"].lower() == "fantasy" for b in data)
 
 
@@ -104,7 +116,7 @@ def test_get_genres(client):
     client.post("/books/", json={"title": "G1", "author": "A1", "genre": "Drama"})
     client.post("/books/", json={"title": "G2", "author": "A2", "genre": "Horror"})
 
-    resp = client.get("/books/genres")
-    assert resp.status_code == 200
-    genres = resp.json()
+    response = client.get("/books/genres")
+    assert response.status_code == 200
+    genres = response.json()
     assert set([g.lower() for g in genres]).issuperset({"drama", "horror"})

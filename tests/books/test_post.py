@@ -4,6 +4,7 @@ def test_post_book_success(client):
         json={"title": "Clean Code", "author": "Uncle Bob", "genre": "Programming"},
     )
     assert response.status_code == 201
+
     data = response.json()
     assert data["title"] == "Clean Code"
     assert data["author"] == "Uncle Bob"
@@ -25,7 +26,7 @@ def test_post_multiple_books(client):
         created_books.append(response.json())
 
     response = client.get("/books/")
-    assert len(response.json()) >= 3
+    assert len(response.json()) == 3
 
 
 def test_post_book_with_same_title_different_author(client):
@@ -34,7 +35,6 @@ def test_post_book_with_same_title_different_author(client):
     assert response1.status_code == 201
 
     book["author"] = "Author 2"
-    book["genre"] = "Reference"
     response2 = client.post("/books/", json=book)
     assert response2.status_code == 201
 
