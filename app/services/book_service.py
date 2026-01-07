@@ -11,6 +11,7 @@ from app.schemas.book import BookCreate, BookUpdate
 from app.core.constants import CACHE_ENTITY_TTL
 from app.utils.uuid import validate_uuid
 from app.utils.cache import get_cache, set_cache, clear_cache
+from app.core.errors import BookNotFound
 
 
 class BookService:
@@ -42,7 +43,7 @@ class BookService:
         session: Session,
         skip: int = 0,
         limit: int = 100,
-        genre: str | None = None,
+        genre: str = None,
     ):
         query = session.query(Book).options(joinedload(Book.status))
 
@@ -67,7 +68,6 @@ class BookService:
             return None
 
         cache_key = f"book:{book_key}:details"
-
         cached_book = get_cache(cache_key)
         if cached_book:
             return cached_book
@@ -114,7 +114,7 @@ class BookService:
     def set_status(self, session: Session, book_key: str, status_enum: str):
         book = self._get_for_update(session, book_key)
         if not book:
-            return None
+            raise BookNotFound()
 
         status = (
             session.query(BookStatus)
