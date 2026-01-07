@@ -6,6 +6,8 @@ Create Date: 2026-01-07 02:16:53.679724
 
 """
 from typing import Sequence, Union
+from datetime import datetime, timedelta
+import uuid
 
 from alembic import op
 import sqlalchemy as sa
@@ -168,10 +170,119 @@ def upgrade() -> None:
     )
     op.create_index(op.f('ix_reservation_events_id'), 'reservation_events', ['id'], unique=False)
     # ### end Alembic commands ###
+    
+    op.execute("""
+        INSERT INTO user_status (enumerator, translation) VALUES
+        ('active', 'Ativo'),
+        ('suspended', 'Suspenso'),
+        ('deactivated', 'Desativado')
+    """)
+    
+    op.execute("""
+        INSERT INTO book_status (enumerator, translation) VALUES
+        ('available', 'Disponível'),
+        ('loaned', 'Emprestado')
+    """)
+    
+    op.execute("""
+        INSERT INTO loan_status (enumerator, translation) VALUES
+        ('active', 'Ativo'),
+        ('returned', 'Devolvido')
+    """)
+    
+    op.execute("""
+        INSERT INTO reservation_status (enumerator, translation) VALUES
+        ('active', 'Ativa'),
+        ('cancelled', 'Cancelada'),
+        ('completed', 'Completada')
+    """)
+    
+    op.execute("""
+        INSERT INTO users (user_key, name, email, status_id) VALUES
+        ('{}'::uuid, 'João Silva', 'joao.silva@email.com', 1),
+        ('{}'::uuid, 'Maria Santos', 'maria.santos@email.com', 1),
+        ('{}'::uuid, 'Pedro Oliveira', 'pedro.oliveira@email.com', 1),
+        ('{}'::uuid, 'Ana Costa', 'ana.costa@email.com', 1),
+        ('{}'::uuid, 'Carlos Ferreira', 'carlos.ferreira@email.com', 1),
+        ('{}'::uuid, 'Juliana Alves', 'juliana.alves@email.com', 1),
+        ('{}'::uuid, 'Roberto Lima', 'roberto.lima@email.com', 2),
+        ('{}'::uuid, 'Fernanda Souza', 'fernanda.souza@email.com', 1),
+        ('{}'::uuid, 'Lucas Pereira', 'lucas.pereira@email.com', 3),
+        ('{}'::uuid, 'Patrícia Ribeiro', 'patricia.ribeiro@email.com', 1)
+    """.format(
+        uuid.uuid4(), uuid.uuid4(), uuid.uuid4(), uuid.uuid4(), uuid.uuid4(),
+        uuid.uuid4(), uuid.uuid4(), uuid.uuid4(), uuid.uuid4(), uuid.uuid4()
+    ))
+    
+    op.execute("""
+        INSERT INTO books (book_key, title, author, genre, status_id) VALUES
+        ('{}'::uuid, '1984', 'George Orwell', 'Ficção Científica', 1),
+        ('{}'::uuid, 'Dom Casmurro', 'Machado de Assis', 'Romance', 1),
+        ('{}'::uuid, 'O Senhor dos Anéis', 'J.R.R. Tolkien', 'Fantasia', 1),
+        ('{}'::uuid, 'Harry Potter e a Pedra Filosofal', 'J.K. Rowling', 'Fantasia', 1),
+        ('{}'::uuid, 'O Pequeno Príncipe', 'Antoine de Saint-Exupéry', 'Fábula', 1),
+        ('{}'::uuid, 'Cem Anos de Solidão', 'Gabriel García Márquez', 'Realismo Mágico', 1),
+        ('{}'::uuid, 'O Código Da Vinci', 'Dan Brown', 'Thriller', 1),
+        ('{}'::uuid, 'A Culpa é das Estrelas', 'John Green', 'Romance', 1),
+        ('{}'::uuid, 'Clean Code', 'Robert C. Martin', 'Tecnologia', 1),
+        ('{}'::uuid, 'Sapiens', 'Yuval Noah Harari', 'História', 1),
+        ('{}'::uuid, 'O Hobbit', 'J.R.R. Tolkien', 'Fantasia', 1),
+        ('{}'::uuid, 'A Revolução dos Bichos', 'George Orwell', 'Fábula', 1),
+        ('{}'::uuid, 'Orgulho e Preconceito', 'Jane Austen', 'Romance', 1),
+        ('{}'::uuid, 'Crime e Castigo', 'Fiódor Dostoiévski', 'Romance Psicológico', 1),
+        ('{}'::uuid, 'O Nome da Rosa', 'Umberto Eco', 'Mistério', 1),
+        ('{}'::uuid, 'A Metamorfose', 'Franz Kafka', 'Ficção Moderna', 1),
+        ('{}'::uuid, 'O Alienista', 'Machado de Assis', 'Conto', 1),
+        ('{}'::uuid, 'Admirável Mundo Novo', 'Aldous Huxley', 'Ficção Científica', 1),
+        ('{}'::uuid, 'Fahrenheit 451', 'Ray Bradbury', 'Ficção Científica', 1),
+        ('{}'::uuid, 'O Cortiço', 'Aluísio Azevedo', 'Naturalismo', 1),
+        ('{}'::uuid, 'Grande Sertão: Veredas', 'Guimarães Rosa', 'Romance', 1),
+        ('{}'::uuid, 'Memórias Póstumas de Brás Cubas', 'Machado de Assis', 'Romance', 1),
+        ('{}'::uuid, 'A Moreninha', 'Joaquim Manuel de Macedo', 'Romance', 1),
+        ('{}'::uuid, 'Iracema', 'José de Alencar', 'Romance Indianista', 1),
+        ('{}'::uuid, 'O Coruja', 'Aluísio Azevedo', 'Romance', 1)
+    """.format(
+        uuid.uuid4(), uuid.uuid4(), uuid.uuid4(), uuid.uuid4(), uuid.uuid4(),
+        uuid.uuid4(), uuid.uuid4(), uuid.uuid4(), uuid.uuid4(), uuid.uuid4(),
+        uuid.uuid4(), uuid.uuid4(), uuid.uuid4(), uuid.uuid4(), uuid.uuid4(),
+        uuid.uuid4(), uuid.uuid4(), uuid.uuid4(), uuid.uuid4(), uuid.uuid4(),
+        uuid.uuid4(), uuid.uuid4(), uuid.uuid4(), uuid.uuid4(), uuid.uuid4()
+    ))
+    
+    op.execute("""
+        INSERT INTO loans (loan_key, user_id, book_id, status_id, start_date, due_date, return_date, fine_amount) VALUES
+        ('{}'::uuid, 1, 1, 1, NOW() - INTERVAL '5 days', NOW() + INTERVAL '9 days', NULL, 0.0),
+        ('{}'::uuid, 2, 2, 1, NOW() - INTERVAL '3 days', NOW() + INTERVAL '11 days', NULL, 0.0),
+        ('{}'::uuid, 1, 4, 2, NOW() - INTERVAL '30 days', NOW() - INTERVAL '16 days', NOW() - INTERVAL '18 days', 0.0),
+        ('{}'::uuid, 2, 5, 2, NOW() - INTERVAL '25 days', NOW() - INTERVAL '11 days', NOW() - INTERVAL '13 days', 0.0)
+    """.format(
+        uuid.uuid4(), uuid.uuid4(), uuid.uuid4(), uuid.uuid4()
+    ))
+    
+    op.execute("""
+        INSERT INTO reservations (reservation_key, user_id, book_id, status_id, reserved_at, expires_at, completed_at) VALUES
+        ('{}'::uuid, 3, 3, 1, NOW() - INTERVAL '2 days', NOW() + INTERVAL '5 days', NULL),
+        ('{}'::uuid, 4, 6, 3, NOW() - INTERVAL '10 days', NOW() - INTERVAL '3 days', NOW() - INTERVAL '8 days')
+    """.format(
+        uuid.uuid4(), uuid.uuid4()
+    ))
 
 
 def downgrade() -> None:
     """Downgrade schema."""
+    op.execute("DELETE FROM reservation_events")
+    op.execute("DELETE FROM reservations")
+    op.execute("DELETE FROM loan_events")
+    op.execute("DELETE FROM loans")
+    op.execute("DELETE FROM book_events")
+    op.execute("DELETE FROM user_events")
+    op.execute("DELETE FROM books")
+    op.execute("DELETE FROM users")
+    op.execute("DELETE FROM user_status")
+    op.execute("DELETE FROM book_status")
+    op.execute("DELETE FROM loan_status")
+    op.execute("DELETE FROM reservation_status")
+    
     # ### commands auto generated by Alembic - please adjust! ###
     op.drop_index(op.f('ix_reservation_events_id'), table_name='reservation_events')
     op.drop_table('reservation_events')
