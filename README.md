@@ -5,70 +5,58 @@
 
 ---
 
-## 📋 Cumprimento dos Requisitos do Case
+## Lista de Funcionalidades Implementadas
 
-### ✅ Entidades Obrigatórias (100%)
-- ✅ **Usuário** → [`app/models/user.py`](app/models/user.py)
-- ✅ **Livro** → [`app/models/book.py`](app/models/book.py)
-- ✅ **Empréstimo** → [`app/models/loan.py`](app/models/loan.py)
+### Entidades Obrigatórias (100%)
+-  **Usuário** → [`app/models/user.py`](app/models/user.py)
+- **Livro** → [`app/models/book.py`](app/models/book.py)
+- **Empréstimo** → [`app/models/loan.py`](app/models/loan.py)
 
-### ✅ Features Necessárias (100%)
+### Features Necessárias (100%)
 
 #### a) Gestão de Usuários
-- ✅ Listar todos os usuários → `GET /users/`
-- ✅ Cadastrar novo usuário → `POST /users/`
-- ✅ Buscar usuário por ID → `GET /users/{user_key}`
-- ✅ Listar empréstimos do usuário → `GET /users/{user_key}/loans`
+- Listar todos os usuários → `GET /users/`
+- Cadastrar novo usuário → `POST /users/`
+- Buscar usuário por ID → `GET /users/{user_key}` (UUID utilizado visando segurança)
+- Listar todos os empréstimos associados a um usuário → `GET /users/{user_key}/loans`
 
 #### b) Catálogo de Livros
-- ✅ Listar livros → `GET /books/`
-- ✅ Cadastrar livro com autor → `POST /books/`
-- ✅ Verificar disponibilidade → `GET /books/{book_key}/availability`
+- Listar livros → `GET /books/`
+- Cadastrar novo livro vinculado a um autor → `POST /books/`
+- Verificar disponibilidade para empréstimo → `GET /books/{book_key}/availability`
 
 #### c) Sistema de Empréstimos
-- ✅ Realizar empréstimo → `POST /loans/`
-- ✅ Processar devolução com multa → `POST /loans/return`
-- ✅ Listar empréstimos ativos/atrasados → `GET /loans/?status=active&overdue=true`
-- ✅ Histórico por usuário → `GET /users/{user_key}/loans`
+- Realizar empréstimo de livro→ `POST /loans/`
+- Processar devolução com cálculo de multa → `POST /loans/return`
+- Listar empréstimos ativos/atrasados → `GET /loans/?status=active&overdue=true`
+- Consultar histórico de empréstimos por usuário → `GET /users/{user_key}/loans`
 
 **Regras de Negócio:**
-- ✅ Prazo padrão: 14 dias
-- ✅ Multa: R$ 2,00 por dia de atraso
-- ✅ Máximo 3 empréstimos ativos por usuário
+- Prazo padrão: 14 dias
+- Multa: R$ 2,00 por dia de atraso
+- Usuário pode ter no máximo 3 empréstimos ativos
 
-### ✅ Diferenciais Implementados
+### Funcionalidades Extras (Diferenciais)
 
-#### Básico (4/4 - 100%)
-- ✅ Paginação em todas as listagens
-- ✅ Documentação Swagger/OpenAPI
-- ✅ Validação robusta com Pydantic
-- ✅ Logging estruturado
+#### Básico (100%)
+- Implementar paginação em todas as listagens
+- Documentação automática com Swagger/OpenAPI
+- Validação robusta com Pydantic
+- Logging estruturado de operações
 
-#### Intermediário (5/5 - 100%)
-- ✅ Sistema de reservas de livros
-- ✅ Cache em memória (thread-safe)
-- ✅ Rate limiting nos endpoints
-- ✅ Testes automatizados (80+ testes)
-- ✅ Middleware de autenticação básica
+#### Intermediário (100%)
+- Sistema de reservas de livros
+- Cache em memória (thread-safe)
+- Rate limiting nos endpoints
+- Testes automatizados (80+ testes)
+- Middleware de autenticação básica
 
-#### Avançado (4/5 - 80%)
-- ✅ Notificações via webhook
-- ✅ Sistema de renovação de empréstimos
-- ✅ Exportação de relatórios (CSV/PDF)
-- ✅ Observabilidade (métricas + health check)
-- ❌ Frontend (não implementado)
-
-### 📦 Entregáveis
-- ✅ Código no GitHub
-- ✅ README detalhado (este arquivo)
-- ✅ Instruções de instalação e execução
-- ✅ Documentação de decisões arquiteturais
-- ✅ Lista de funcionalidades implementadas
-- ✅ Exemplos de uso da API
-- ✅ Collection do Postman ([`Library_System_API.postman_collection.json`](Library_System_API.postman_collection.json))
-- ✅ Docker Compose para infraestrutura
-
----
+#### Avançado (100%)
+- Notificações de vencimento (email/webhook)
+- Sistema de renovação de empréstimos
+- Exportação de relatórios (CSV/PDF)
+- Observabilidade (métricas + health check)
+- Frontend em repositório separado: [library-system-frontend](https://github.com/eh1k4ri/library-front)
 
 ## 🚀 Instalação e Execução
 
@@ -506,65 +494,6 @@ pytest tests/reports/      # Testes de relatórios
 
 ---
 
-## 📁 Estrutura do Projeto
-
-```
-library_system/
-├── app/
-│   ├── api/
-│   │   ├── routers/          # Endpoints da API
-│   │   └── deps.py           # Dependências compartilhadas
-│   ├── core/
-│   │   ├── middlewares/      # Auth, logging, rate limit, metrics
-│   │   ├── constants.py      # Constantes (multas, prazos, etc)
-│   │   ├── errors.py         # Erros customizados
-│   │   └── logger.py         # Configuração de logs
-│   ├── db/
-│   │   └── session.py        # Conexão com banco
-│   ├── models/               # SQLAlchemy models (ORM)
-│   ├── schemas/              # Pydantic schemas (validação)
-│   ├── services/             # Lógica de negócio
-│   ├── utils/                # Cache, UUID, text utils
-│   └── main.py               # Aplicação FastAPI
-├── alembic/
-│   └── versions/             # Migrações do banco
-├── tests/                    # Testes automatizados
-├── ops/
-│   └── monitoring/           # Config do Prometheus
-├── docker-compose.yml        # PostgreSQL, Redis, RabbitMQ
-├── requirements.txt          # Dependências Python
-├── alembic.ini              # Config Alembic
-└── README.md                # Este arquivo
-```
-
----
-
-## 🔧 Tecnologias Utilizadas
-
-### Core
-- **Python 3.10+** - Linguagem principal
-- **FastAPI** - Framework web moderno e rápido
-- **SQLAlchemy 2.0** - ORM para acesso a dados
-- **Pydantic v2** - Validação e serialização
-- **Alembic** - Migrações de banco de dados
-- **PostgreSQL** - Banco de dados relacional
-
-### Observabilidade
-- **Prometheus Client** - Métricas
-- **Python Logging** - Logs estruturados
-
-### Testes
-- **Pytest** - Framework de testes
-- **Pytest-Cov** - Cobertura de código
-
-### Extras
-- **ReportLab** - Geração de PDFs
-- **HTTPX** - Cliente HTTP para notificações
-- **Docker** - Containerização
-- **Redis** (opcional) - Cache distribuído
-- **RabbitMQ** (opcional) - Message broker
-
----
 
 ## 🌟 Diferenciais Implementados
 
@@ -584,55 +513,11 @@ library_system/
 12. **Exportação de relatórios** - CSV e PDF
 13. **Observabilidade completa** - Métricas + health check
 
-### ❌ Não Implementado (1/14)
-
-14. **Frontend** - Focado na API REST
-
----
-
-## 🚀 Melhorias Futuras
-
-- [ ] Frontend React/Vue para interface gráfica
-- [ ] Autenticação JWT com refresh tokens
-- [ ] Upload de capas de livros (S3/MinIO)
-- [ ] Sistema de avaliações e comentários
-- [ ] Recomendações baseadas em histórico
-- [ ] Integração com APIs externas (Google Books)
-- [ ] Notificações por e-mail (SendGrid/SES)
-- [ ] Deploy automatizado (CI/CD)
-- [ ] Cache distribuído com Redis
-- [ ] Mensageria com RabbitMQ
-
----
-
 ## 📞 Links Úteis
 
 - **Swagger UI**: http://localhost:8000/docs
 - **ReDoc**: http://localhost:8000/redoc
-- **Healthcheck**: http://localhost:8000/healthcheck
+- **Healthcheck**: http://localhost:8000/
 - **Métricas Prometheus**: http://localhost:8000/metrics
-- **Prometheus Dashboard**: http://localhost:9090 (se iniciado)
+- **Prometheus Dashboard**: http://localhost:9090
 - **Collection Postman**: [`Library_System_API.postman_collection.json`](Library_System_API.postman_collection.json)
-
----
-
-## 👨‍💻 Autor
-
-**Desenvolvido para o Case Técnico - BTG Pactual**
-
-Demonstrando conhecimentos em:
-- ✅ Arquitetura em camadas (Service Layer Pattern)
-- ✅ Padrões de projeto (Repository, Factory, Strategy, Observer)
-- ✅ Qualidade de código (SOLID, DRY, type hints)
-- ✅ Tratamento de erros e validações robustas
-- ✅ Conhecimentos extras (observabilidade, testes, cache, rate limiting)
-
----
-
-## 📝 Licença
-
-Este projeto foi desenvolvido como parte de um case técnico.
-
----
-
-**⭐ Obrigado por avaliar este projeto!**
