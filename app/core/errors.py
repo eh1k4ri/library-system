@@ -212,6 +212,28 @@ class CannotRenewOverdueLoan(CustomError):
         )
 
 
+class InvalidStatus(CustomError):
+    def __init__(self):
+        super().__init__(
+            code="LBS017",
+            title="Invalid status",
+            description="The provided status is invalid or not allowed",
+            translation="O status fornecido é inválido ou não permitido",
+            http_status=status.HTTP_400_BAD_REQUEST,
+        )
+
+
+class InvalidExportFormat(CustomError):
+    def __init__(self, message: str = None):
+        super().__init__(
+            code="LBS018",
+            title="Invalid export format",
+            description=message or "The provided export format is not supported",
+            translation="O formato de exportação fornecido não é suportado",
+            http_status=status.HTTP_400_BAD_REQUEST,
+        )
+
+
 def http_error(
     error: CustomError, *, extra: Optional[Dict[str, Any]] = None
 ) -> CustomError:

@@ -1,9 +1,10 @@
 from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, Response, status
 from sqlalchemy.orm import Session
 from app.db.session import get_session
 from app.services.report_service import ReportService
 from app.api.deps import PaginationParams
+from app.core.errors import InvalidExportFormat
 
 router = APIRouter()
 report_service = ReportService()
@@ -27,7 +28,7 @@ def export_loans(
             fmt=format,
         )
     except ValueError as exc:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
+        raise InvalidExportFormat(str(exc))
 
     headers = {"Content-Disposition": f"attachment; filename={filename}"}
     return Response(content=content, media_type=media_type, headers=headers)
@@ -47,7 +48,7 @@ def export_users(
             fmt=format,
         )
     except ValueError as exc:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
+        raise InvalidExportFormat(str(exc))
 
     headers = {"Content-Disposition": f"attachment; filename={filename}"}
     return Response(content=content, media_type=media_type, headers=headers)
@@ -69,7 +70,7 @@ def export_books(
             fmt=format,
         )
     except ValueError as exc:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
+        raise InvalidExportFormat(str(exc))
 
     headers = {"Content-Disposition": f"attachment; filename={filename}"}
     return Response(content=content, media_type=media_type, headers=headers)
@@ -95,7 +96,7 @@ def export_reservations(
             fmt=format,
         )
     except ValueError as exc:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
+        raise InvalidExportFormat(str(exc))
 
     headers = {"Content-Disposition": f"attachment; filename={filename}"}
     return Response(content=content, media_type=media_type, headers=headers)
