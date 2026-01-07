@@ -41,7 +41,7 @@ PAGINATION_DEFAULT_PAGE: int = 1
 PUBLIC_PATHS: List[str] = [
     "/docs",
     "/openapi.json",
-    "/healthcheck",
+    "/",
     "/metrics",
 ]
 

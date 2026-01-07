@@ -1,5 +1,5 @@
 def test_metrics(client):
-    client.get("/healthcheck")
+    client.get("/")
     client.get("/books")
 
     response = client.get("/metrics")

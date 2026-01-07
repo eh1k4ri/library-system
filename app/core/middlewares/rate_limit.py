@@ -17,6 +17,9 @@ _last_cleanup = time.time()
 
 
 async def rate_limit(request: Request, call_next: Callable):
+    if request.method in ("OPTIONS", "GET"):
+        return await call_next(request)
+
     client_ip = request.client.host if request.client else "anonymous"
     key = f"rl:{client_ip}:{request.url.path}"
 
