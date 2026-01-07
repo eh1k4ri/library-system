@@ -12,6 +12,11 @@ SECURITY_PASS: str = os.getenv("PASSWORD", "password123")
 
 NOTIFY_WEBHOOK_URL: str | None = os.getenv("NOTIFY_WEBHOOK_URL")
 
+
+def get_notify_webhook_url() -> str | None:
+    return os.getenv("NOTIFY_WEBHOOK_URL")
+
+
 LOAN_DEFAULT_DAYS: int = 14
 LOAN_FINE_PER_DAY: float = 2.0
 LOAN_MAX_ACTIVE_LOANS: int = 3

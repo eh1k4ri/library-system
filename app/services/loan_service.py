@@ -7,7 +7,7 @@ from app.models.book_status import BookStatus
 from app.models.loan_status import LoanStatus
 from app.models.loan_event import LoanEvent
 from app.schemas.loan import LoanCreate, LoanReturnRequest
-from app.services.notification_service import notification_service
+from app.services.notification_service import NotificationService
 from app.core.constants import (
     LOAN_DEFAULT_DAYS,
     LOAN_FINE_PER_DAY,
@@ -104,7 +104,7 @@ class LoanService:
             clear_cache(f"book:{book.book_key}:details")
 
             try:
-                notification_service.notify_due_date(
+                NotificationService.notify_due_date(
                     user_email=user.email,
                     loan_key=str(new_loan.loan_key),
                     book_title=book.title,

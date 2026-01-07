@@ -2,7 +2,7 @@ import time
 from typing import Any, Optional
 from threading import RLock
 
-MAX_CACHE_SIZE = 1000
+from app.core.constants import CACHE_MAX_SIZE, CACHE_DEFAULT_TTL
 
 _store: dict[str, tuple[float, Any]] = {}
 _lock = RLock()
@@ -21,10 +21,10 @@ def get_cache(key: str) -> Optional[Any]:
         return value
 
 
-def set_cache(key: str, value: Any, ttl_seconds: int = 300) -> None:
+def set_cache(key: str, value: Any, ttl_seconds: int = CACHE_DEFAULT_TTL) -> None:
     expires_at = time.time() + ttl_seconds
     with _lock:
-        if len(_store) >= MAX_CACHE_SIZE:
+        if len(_store) >= CACHE_MAX_SIZE:
             _store.clear()
 
         _store[key] = (expires_at, value)

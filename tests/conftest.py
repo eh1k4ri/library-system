@@ -5,7 +5,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.pool import StaticPool
 from sqlalchemy.orm import sessionmaker
 from fastapi.testclient import TestClient
-from app.db.session import Base, get_db
+from app.db.session import Base, get_session
 from app.main import app
 from app.models import (
     UserStatus,
@@ -64,16 +64,19 @@ def session_fixture():
 
 @pytest.fixture(name="client")
 def client_fixture(session):
-    def override_get_db():
+    def override_get_session():
         try:
             yield session
         finally:
             session.close()
 
-    app.dependency_overrides[get_db] = override_get_db
+    app.dependency_overrides[get_session] = override_get_session
     client = TestClient(app)
 
     client.headers.update(AUTH_HEADER)
 
     yield client
     app.dependency_overrides.clear()
+
+
+pytest_plugins = ["tests.utils.setup_tools"]

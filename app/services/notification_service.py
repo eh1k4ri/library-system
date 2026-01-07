@@ -1,13 +1,13 @@
 import requests
 from datetime import datetime
 from typing import Optional
-from app.core.constants import NOTIFY_WEBHOOK_URL
+from app.core.constants import get_notify_webhook_url
 from app.core.logger import get_logger
 
 
 class NotificationService:
     def __init__(self) -> None:
-        self.webhook_url = NOTIFY_WEBHOOK_URL
+        self.webhook_url = get_notify_webhook_url()
         self.logger = get_logger(__name__)
 
     def notify_due_date(
@@ -34,6 +34,3 @@ class NotificationService:
             response.raise_for_status()
         except Exception as exc:
             self.logger.warning("notification_failed", extra={"details": str(exc)})
-
-
-notification_service = NotificationService()
