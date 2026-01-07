@@ -1,3 +1,6 @@
+import uuid
+
+
 def test_get_users_list(client):
     client.post("/users/", json={"name": "A", "email": "a@test.com"})
     client.post("/users/", json={"name": "B", "email": "b@test.com"})
@@ -13,24 +16,21 @@ def test_get_users_empty_list(client):
     assert isinstance(response.json(), list)
 
 
-def test_get_user_by_key(client):
-    create_response = client.post(
-        "/users/", json={"name": "Test User", "email": "test@example.com"}
-    )
-    assert create_response.status_code == 201
-    user_key = create_response.json()["user_key"]
+def test_get_user_by_key(client, created_user):
+    user_key = created_user["user_key"]
 
     response = client.get(f"/users/{user_key}")
     assert response.status_code == 200
     data = response.json()
     assert data["user_key"] == user_key
-    assert data["name"] == "Test User"
-    assert data["email"] == "test@example.com"
+    assert data["name"] == created_user["name"]
+    assert data["email"] == created_user["email"]
 
 
 def test_get_user_not_found(client):
-    fake_key = "00000000-0000-0000-0000-000000000000"
+    fake_key = str(uuid.uuid4())
     response = client.get(f"/users/{fake_key}")
+
     assert response.status_code == 404
     assert response.json()["detail"]["code"] == "LBS002"
 
@@ -41,8 +41,8 @@ def test_get_user_pagination(client):
 
     response = client.get("/users/?page=1&per_page=2")
     assert response.status_code == 200
-    assert len(response.json()) <= 2
+    assert len(response.json()) == 2
 
     response = client.get("/users/?page=2&per_page=2")
     assert response.status_code == 200
-    assert len(response.json()) <= 2
+    assert len(response.json()) == 2

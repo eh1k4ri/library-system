@@ -3,6 +3,7 @@ def test_post_user_success(client):
         "/users/", json={"name": "Tester User", "email": "create@test.com"}
     )
     assert response.status_code == 201
+
     data = response.json()
     assert data["email"] == "create@test.com"
     assert data["name"] == "Tester User"
@@ -14,6 +15,7 @@ def test_post_user_duplicate_email(client):
     client.post("/users/", json={"name": "User 1", "email": "dup@test.com"})
 
     response = client.post("/users/", json={"name": "User 2", "email": "dup@test.com"})
+
     assert response.status_code == 400
     assert response.json()["detail"]["code"] == "LBS003"
 
@@ -23,6 +25,7 @@ def test_post_user_with_valid_data(client):
         "/users/", json={"name": "Jane Smith", "email": "jane.smith@example.com"}
     )
     assert response.status_code == 201
+    
     data = response.json()
     assert data["name"] == "Jane Smith"
     assert data["email"] == "jane.smith@example.com"
