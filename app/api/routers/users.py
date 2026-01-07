@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
 from uuid import UUID
 from app.db.session import get_session
 from app.schemas.user import UserCreate, UserResponse, UserUpdate
@@ -58,10 +58,15 @@ def get_user(user_key: UUID, session: Session = Depends(get_session)):
 @router.get("/{user_key}/loans", response_model=List[LoanResponse])
 def get_user_loans(
     user_key: UUID,
+    status: Optional[str] = None,
     pagination: PaginationParams = Depends(),
     session: Session = Depends(get_session),
 ):
     loans = service.get_user_loans(
-        session, user_key, skip=pagination.skip, limit=pagination.per_page
+        session,
+        user_key,
+        skip=pagination.skip,
+        limit=pagination.per_page,
+        status=status,
     )
     return loans

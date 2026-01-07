@@ -133,18 +133,25 @@ class UserService:
         session.add(event)
 
     def get_user_loans(
-        self, session: Session, user_key: str, skip: int = 0, limit: int = 100
+        self,
+        session: Session,
+        user_key: str,
+        skip: int = 0,
+        limit: int = 100,
+        status: Optional[str] = None,
     ):
         user = self.get_by_key(session, user_key)
 
         if not user:
             raise UserNotFound()
 
-        return (
+        query = (
             session.query(Loan)
             .options(joinedload(Loan.book), joinedload(Loan.status))
             .filter(Loan.user_id == user.id)
-            .offset(skip)
-            .limit(limit)
-            .all()
         )
+
+        if status:
+            query = query.join(Loan.status).filter(Loan.status.has(enumerator=status))
+
+        return query.offset(skip).limit(limit).all()
