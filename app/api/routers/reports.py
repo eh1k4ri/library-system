@@ -10,7 +10,7 @@ router = APIRouter()
 report_service = ReportService()
 
 
-@router.get("/report/loans/export")
+@router.get("/reports/loans/export")
 def export_loans(
     format: str = "csv",
     status_filter: Optional[str] = None,
@@ -34,7 +34,7 @@ def export_loans(
     return Response(content=content, media_type=media_type, headers=headers)
 
 
-@router.get("/report/users/export")
+@router.get("/reports/users/export")
 def export_users(
     format: str = "csv",
     pagination: PaginationParams = Depends(),
@@ -54,7 +54,7 @@ def export_users(
     return Response(content=content, media_type=media_type, headers=headers)
 
 
-@router.get("/report/books/export")
+@router.get("/reports/books/export")
 def export_books(
     format: str = "csv",
     genre: Optional[str] = None,
@@ -76,7 +76,7 @@ def export_books(
     return Response(content=content, media_type=media_type, headers=headers)
 
 
-@router.get("/report/reservations/export")
+@router.get("/reports/reservations/export")
 def export_reservations(
     format: str = "csv",
     user_key: Optional[str] = None,

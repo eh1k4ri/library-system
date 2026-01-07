@@ -56,9 +56,9 @@ app.middleware("http")(log_requests)
 
 app.include_router(healthcheck.router, prefix="", tags=["System"])
 
-app.include_router(users.router, prefix="/user", tags=["Users"])
-app.include_router(books.router, prefix="/book", tags=["Books"])
-app.include_router(loans.router, prefix="/loan", tags=["Loans"])
-app.include_router(reservations.router, prefix="/reservation", tags=["Reservations"])
+app.include_router(users.router, prefix="/users", tags=["Users"])
+app.include_router(books.router, prefix="/books", tags=["Books"])
+app.include_router(loans.router, prefix="/loans", tags=["Loans"])
+app.include_router(reservations.router, prefix="/reservations", tags=["Reservations"])
 app.include_router(metrics.router, prefix="", tags=["System"])
 app.include_router(reports.router, prefix="", tags=["Reports"])
