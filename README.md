@@ -9,7 +9,7 @@
 ```bash
 # 1. Clone e entre no diretório
 git clone https://github.com/eh1k4ri/library-system.git
-cd ./library_system
+cd ./library-system
 
 # 2. Crie ambiente virtual
 python -m venv venv
@@ -285,3 +285,4 @@ print(f"Multa: R$ {returned['fine_amount']:.2f}")
 - **Prometheus Dashboard**: http://localhost:9090
 
 - **Collection Postman**: [`Library_System_API.postman_collection.json`](Library_System_API.postman_collection.json)
+
