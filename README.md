@@ -280,7 +280,6 @@ print(f"Multa: R$ {returned['fine_amount']:.2f}")
 ## Links Úteis
 
 - **Swagger UI**: http://localhost:8000/docs
-- **ReDoc**: http://localhost:8000/redoc
 - **Healthcheck**: http://localhost:8000/
 - **Métricas Prometheus**: http://localhost:8000/metrics
 - **Prometheus Dashboard**: http://localhost:9090
