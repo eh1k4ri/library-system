@@ -38,7 +38,7 @@ docker run --rm -p 9090:9090 -v "$(pwd)/prometheus.yml:/etc/prometheus/prometheu
 
 Acesse:
 - **API (Swagger)**: http://localhost:8000/docs
-- **Prometheus**: http://localhost:9090
+- **Prometheus**: http://localhost:9090/targets
 
 ### Verificação
 
@@ -281,8 +281,5 @@ print(f"Multa: R$ {returned['fine_amount']:.2f}")
 
 - **Swagger UI**: http://localhost:8000/docs
 - **Healthcheck**: http://localhost:8000/
-- **Métricas Prometheus**: http://localhost:8000/metrics
-- **Prometheus Dashboard**: http://localhost:9090
-
-- **Collection Postman**: [`Library_System_API.postman_collection.json`](Library_System_API.postman_collection.json)
-
+- **Métricas**: http://localhost:8000/metrics
+- **Prometheus Dashboard**: http://localhost:9090/targets
