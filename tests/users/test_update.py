@@ -1,5 +1,3 @@
-
-
 def test_update_user_success(client):
     response = client.post(
         "/users/", json={"name": "User One", "email": "one@test.com"}
