@@ -31,68 +31,7 @@ from app.utils.cache import get_cache, set_cache, clear_cache
 
 
 class LoanService:
-
-    def get_loans(self, session: Session, skip: int = 0, limit: int = 100):
-        return (
-            session.query(Loan)
-            .options(
-                joinedload(Loan.user), joinedload(Loan.book), joinedload(Loan.status)
-            )
-            .offset(skip)
-            .limit(limit)
-            .all()
-        )
-
-    def get_loans_filtered(
-        self,
-        session: Session,
-        skip: int = 0,
-        limit: int = 100,
-        status: str | None = None,
-        overdue: bool = False,
-    ):
-        query = session.query(Loan).options(
-            joinedload(Loan.user), joinedload(Loan.book), joinedload(Loan.status)
-        )
-
-        if status:
-            query = query.join(Loan.status).filter(LoanStatus.enumerator == status)
-
-        if overdue:
-            now = datetime.now(timezone.utc)
-            query = (
-                query.join(Loan.status)
-                .filter(LoanStatus.enumerator == "active")
-                .filter(Loan.due_date < now)
-            )
-
-        return query.offset(skip).limit(limit).all()
-
-    def get_loan_by_key(self, session: Session, loan_key: str):
-        loan_key = validate_uuid(loan_key)
-        if not loan_key:
-            return None
-
-        cache_key = f"loan:{loan_key}:details"
-        cached_loan = get_cache(cache_key)
-        if cached_loan:
-            return cached_loan
-
-        loan = (
-            session.query(Loan)
-            .options(
-                joinedload(Loan.user), joinedload(Loan.book), joinedload(Loan.status)
-            )
-            .filter(Loan.loan_key == loan_key)
-            .first()
-        )
-
-        if loan:
-            set_cache(cache_key, loan, ttl_seconds=CACHE_ENTITY_TTL)
-
-        return loan
-
-    def create_loan(self, session: Session, loan_data: LoanCreate):
+    def create(self, session: Session, loan_data: LoanCreate):
         user = (
             session.query(User)
             .options(joinedload(User.status))
@@ -178,6 +117,55 @@ class LoanService:
         except Exception as exc:
             session.rollback()
             raise exc
+
+    def get_all(
+        self,
+        session: Session,
+        skip: int = 0,
+        limit: int = 100,
+        status: str = None,
+        overdue: bool = False,
+    ):
+        query = session.query(Loan).options(
+            joinedload(Loan.user), joinedload(Loan.book), joinedload(Loan.status)
+        )
+
+        if status:
+            query = query.join(Loan.status).filter(LoanStatus.enumerator == status)
+
+        if overdue:
+            now = datetime.now(timezone.utc)
+            query = (
+                query.join(Loan.status)
+                .filter(LoanStatus.enumerator == "active")
+                .filter(Loan.due_date < now)
+            )
+
+        return query.offset(skip).limit(limit).all()
+
+    def get_by_key(self, session: Session, loan_key: str):
+        loan_key = validate_uuid(loan_key)
+        if not loan_key:
+            return None
+
+        cache_key = f"loan:{loan_key}:details"
+        cached_loan = get_cache(cache_key)
+        if cached_loan:
+            return cached_loan
+
+        loan = (
+            session.query(Loan)
+            .options(
+                joinedload(Loan.user), joinedload(Loan.book), joinedload(Loan.status)
+            )
+            .filter(Loan.loan_key == loan_key)
+            .first()
+        )
+
+        if loan:
+            set_cache(cache_key, loan, ttl_seconds=CACHE_ENTITY_TTL)
+
+        return loan
 
     def return_book(self, session: Session, return_data: LoanReturnRequest):
         book = session.query(Book).filter(Book.book_key == return_data.book_key).first()

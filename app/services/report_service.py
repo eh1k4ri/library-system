@@ -10,6 +10,7 @@ from app.services.loan_service import LoanService
 from app.services.user_service import UserService
 from app.services.book_service import BookService
 from app.services.reservation_service import ReservationService
+from app.core.errors import InvalidExportFormat
 
 
 class ReportService:
@@ -29,7 +30,7 @@ class ReportService:
     def _validate_format(format: str) -> str:
         normalized_format = format.lower()
         if normalized_format not in {"csv", "pdf"}:
-            raise ValueError("Unsupported format. Use 'csv' or 'pdf'.")
+            raise InvalidExportFormat("Unsupported format. Use 'csv' or 'pdf'.")
         return normalized_format
 
     def _safe_get(self, obj: Any, path: str, default: str = "") -> str:
@@ -111,7 +112,7 @@ class ReportService:
         fmt: str,
     ) -> tuple[bytes, str, str]:
         normalized = self._validate_format(fmt)
-        loans = self.loan_service.get_loans_filtered(
+        loans = self.loan_service.get_all(
             session,
             skip=skip,
             limit=limit,

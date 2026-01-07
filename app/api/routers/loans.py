@@ -19,7 +19,7 @@ def get_loans(
     pagination: PaginationParams = Depends(),
     session: Session = Depends(get_session),
 ):
-    loans = service.get_loans_filtered(
+    loans = service.get_all(
         session,
         skip=pagination.skip,
         limit=pagination.per_page,
@@ -31,7 +31,7 @@ def get_loans(
 
 @router.get("/{loan_key}", response_model=LoanResponse)
 def get_loan(loan_key: UUID, session: Session = Depends(get_session)):
-    loan = service.get_loan_by_key(session, loan_key=loan_key)
+    loan = service.get_by_key(session, loan_key=loan_key)
     if loan is None:
         raise LoanNotFound()
     return loan
@@ -39,7 +39,7 @@ def get_loan(loan_key: UUID, session: Session = Depends(get_session)):
 
 @router.post("/", response_model=LoanResponse, status_code=status.HTTP_201_CREATED)
 def create_loan(loan_data: LoanCreate, session: Session = Depends(get_session)):
-    return service.create_loan(session=session, loan_data=loan_data)
+    return service.create(session=session, loan_data=loan_data)
 
 
 @router.post("/return", response_model=LoanResponse)
