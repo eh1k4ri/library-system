@@ -18,7 +18,7 @@ def create_reservation(
     reservation: ReservationCreate,
     session: Session = Depends(get_session),
 ):
-    return service.create_reservation(session, reservation)
+    return service.create(session, reservation)
 
 
 @router.get("/", response_model=List[ReservationResponse])
