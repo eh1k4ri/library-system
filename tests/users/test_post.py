@@ -25,7 +25,7 @@ def test_post_user_with_valid_data(client):
         "/users/", json={"name": "Jane Smith", "email": "jane.smith@example.com"}
     )
     assert response.status_code == 201
-    
+
     data = response.json()
     assert data["name"] == "Jane Smith"
     assert data["email"] == "jane.smith@example.com"

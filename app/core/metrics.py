@@ -9,7 +9,9 @@ REQUEST_LATENCY = Histogram(
 )
 
 
-def record_request(method: str, path: str, status_code: int, duration_seconds: float) -> None:
+def record_request(
+    method: str, path: str, status_code: int, duration_seconds: float
+) -> None:
     METHOD = method.upper()
     REQUEST_COUNT.labels(METHOD, path, str(status_code)).inc()
     REQUEST_LATENCY.labels(METHOD, path).observe(duration_seconds)

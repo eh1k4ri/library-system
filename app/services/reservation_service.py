@@ -19,7 +19,7 @@ from app.core.errors import (
     BookNotFound,
 )
 from app.utils.uuid import validate_uuid
-from app.utils.cache import get_cache, set_cache, clear_cache
+from app.utils.cache import get_cache, set_cache
 
 
 class ReservationService:
@@ -165,7 +165,7 @@ class ReservationService:
 
         reservation.status_id = cancelled_status.id
         session.commit()
-        
+
         cache_key = f"reservation:{reservation_key}:details"
         updated = self._get_with_relations(session, reservation_key)
         set_cache(cache_key, updated, ttl_seconds=CACHE_ENTITY_TTL)

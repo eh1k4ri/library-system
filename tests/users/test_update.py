@@ -1,4 +1,3 @@
-import pytest
 
 
 def test_update_user_success(client):

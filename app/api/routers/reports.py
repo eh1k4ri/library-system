@@ -1,5 +1,5 @@
 from typing import Optional
-from fastapi import APIRouter, Depends, Response, status
+from fastapi import APIRouter, Depends, Response
 from sqlalchemy.orm import Session
 from app.db.session import get_session
 from app.services.report_service import ReportService
