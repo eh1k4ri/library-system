@@ -7,6 +7,7 @@ from app.models.user import User
 from app.models.book import Book
 from app.models.book_status import BookStatus
 from app.schemas.reservation import ReservationCreate
+from app.core.constants import CACHE_ENTITY_TTL, RESERVATION_EXPIRY_DAYS
 from app.core.errors import (
     ReservationNotFound,
     CannotReserveAvailableBook,
@@ -18,35 +19,44 @@ from app.core.errors import (
     BookNotFound,
 )
 from app.utils.uuid import validate_uuid
-from app.utils.cache import get_cache, set_cache
+from app.utils.cache import get_cache, set_cache, clear_cache
 
 
 class ReservationService:
-    RESERVATION_EXPIRY_DAYS = 7
 
-    def create_reservation(self, db: Session, reservation_data: ReservationCreate):
-        user = db.query(User).filter(User.user_key == reservation_data.user_key).first()
+    def create(self, session: Session, reservation_data: ReservationCreate):
+        user = (
+            session.query(User)
+            .filter(User.user_key == reservation_data.user_key)
+            .first()
+        )
         if not user:
             raise UserNotFound()
 
-        book = db.query(Book).filter(Book.book_key == reservation_data.book_key).first()
+        book = (
+            session.query(Book)
+            .filter(Book.book_key == reservation_data.book_key)
+            .first()
+        )
         if not book:
             raise BookNotFound()
 
         available_status = (
-            db.query(BookStatus).filter(BookStatus.enumerator == "available").first()
+            session.query(BookStatus)
+            .filter(BookStatus.enumerator == "available")
+            .first()
         )
         if book.status_id == available_status.id:
             raise CannotReserveAvailableBook()
 
         active_status = (
-            db.query(ReservationStatus)
+            session.query(ReservationStatus)
             .filter(ReservationStatus.enumerator == "active")
             .first()
         )
 
         existing_reservation = (
-            db.query(Reservation)
+            session.query(Reservation)
             .filter(
                 and_(
                     Reservation.user_id == user.id,
@@ -59,34 +69,33 @@ class ReservationService:
         if existing_reservation:
             raise DuplicateActiveReservation()
 
-        expires_at = datetime.now() + timedelta(days=self.RESERVATION_EXPIRY_DAYS)
+        expires_at = datetime.now() + timedelta(days=RESERVATION_EXPIRY_DAYS)
         new_reservation = Reservation(
             user_id=user.id,
             book_id=book.id,
             status_id=active_status.id,
             expires_at=expires_at,
         )
-        db.add(new_reservation)
-        db.commit()
-        db.refresh(new_reservation)
+        session.add(new_reservation)
+        session.commit()
+        session.refresh(new_reservation)
 
-        full_reservation = self._get_with_relations(db, new_reservation.reservation_key)
-        serialized = self._serialize(full_reservation)
-        cache_key = f"reservation:{full_reservation.reservation_key}:details"
-        set_cache(cache_key, serialized, ttl_seconds=60)
+        full_reservation = self._get_with_relations(
+            session, new_reservation.reservation_key
+        )
 
-        return serialized
+        return full_reservation
 
-    def get_reservations(
+    def get_all(
         self,
-        db: Session,
+        session: Session,
         skip: int = 0,
         limit: int = 100,
-        user_key: str | None = None,
-        book_key: str | None = None,
-        status: str | None = None,
+        user_key: str = None,
+        book_key: str = None,
+        status: str = None,
     ):
-        query = db.query(Reservation).options(
+        query = session.query(Reservation).options(
             joinedload(Reservation.user),
             joinedload(Reservation.book),
             joinedload(Reservation.status),
@@ -109,9 +118,9 @@ class ReservationService:
         reservations = (
             query.order_by(Reservation.reserved_at).offset(skip).limit(limit).all()
         )
-        return [self._serialize(r) for r in reservations]
+        return reservations
 
-    def get_reservation_by_key(self, db: Session, reservation_key: str):
+    def get_by_key(self, session: Session, reservation_key: str):
         reservation_key = validate_uuid(reservation_key)
         if not reservation_key:
             return None
@@ -121,32 +130,30 @@ class ReservationService:
         if cached_reservation:
             return cached_reservation
 
-        reservation = self._get_with_relations(db, reservation_key)
+        reservation = self._get_with_relations(session, reservation_key)
 
         if reservation:
-            serialized = self._serialize(reservation)
-            set_cache(cache_key, serialized, ttl_seconds=60)
-            return serialized
+            set_cache(cache_key, reservation, ttl_seconds=CACHE_ENTITY_TTL)
 
-        return None
+        return reservation
 
-    def cancel_reservation(self, db: Session, reservation_key: str):
+    def cancel_reservation(self, session: Session, reservation_key: str):
         reservation_key = validate_uuid(reservation_key)
         if not reservation_key:
             raise ReservationNotFound()
 
-        reservation = self._get_with_relations(db, reservation_key)
+        reservation = self._get_with_relations(session, reservation_key)
 
         if not reservation:
             raise ReservationNotFound()
 
         cancelled_status = (
-            db.query(ReservationStatus)
+            session.query(ReservationStatus)
             .filter(ReservationStatus.enumerator == "cancelled")
             .first()
         )
         completed_status = (
-            db.query(ReservationStatus)
+            session.query(ReservationStatus)
             .filter(ReservationStatus.enumerator == "completed")
             .first()
         )
@@ -157,26 +164,26 @@ class ReservationService:
             raise CannotCancelCompletedReservation()
 
         reservation.status_id = cancelled_status.id
-        db.commit()
+        session.commit()
+        
         cache_key = f"reservation:{reservation_key}:details"
-        updated = self._get_with_relations(db, reservation_key)
-        serialized = self._serialize(updated)
-        set_cache(cache_key, serialized, ttl_seconds=60)
+        updated = self._get_with_relations(session, reservation_key)
+        set_cache(cache_key, updated, ttl_seconds=CACHE_ENTITY_TTL)
 
-        return serialized
+        return updated
 
-    def complete_reservation(self, db: Session, reservation_key: str):
+    def complete_reservation(self, session: Session, reservation_key: str):
         reservation_key = validate_uuid(reservation_key)
         if not reservation_key:
             raise ReservationNotFound()
 
-        reservation = self._get_with_relations(db, reservation_key)
+        reservation = self._get_with_relations(session, reservation_key)
 
         if not reservation:
             raise ReservationNotFound()
 
         active_status = (
-            db.query(ReservationStatus)
+            session.query(ReservationStatus)
             .filter(ReservationStatus.enumerator == "active")
             .first()
         )
@@ -184,23 +191,24 @@ class ReservationService:
             raise CannotCompleteInactiveReservation()
 
         completed_status = (
-            db.query(ReservationStatus)
+            session.query(ReservationStatus)
             .filter(ReservationStatus.enumerator == "completed")
             .first()
         )
         reservation.status_id = completed_status.id
         reservation.completed_at = datetime.now()
-        db.commit()
+
+        session.commit()
+
         cache_key = f"reservation:{reservation_key}:details"
-        updated = self._get_with_relations(db, reservation_key)
-        serialized = self._serialize(updated)
-        set_cache(cache_key, serialized, ttl_seconds=60)
+        updated = self._get_with_relations(session, reservation_key)
+        set_cache(cache_key, updated, ttl_seconds=CACHE_ENTITY_TTL)
 
-        return serialized
+        return updated
 
-    def _get_with_relations(self, db: Session, reservation_key):
+    def _get_with_relations(self, session: Session, reservation_key):
         return (
-            db.query(Reservation)
+            session.query(Reservation)
             .options(
                 joinedload(Reservation.user),
                 joinedload(Reservation.book),
@@ -209,21 +217,3 @@ class ReservationService:
             .filter(Reservation.reservation_key == reservation_key)
             .first()
         )
-
-    @staticmethod
-    def _serialize(reservation: Reservation):
-        return {
-            "reservation_key": reservation.reservation_key,
-            "reserved_at": reservation.reserved_at,
-            "expires_at": reservation.expires_at,
-            "completed_at": reservation.completed_at,
-            "user_id": reservation.user_id,
-            "user_key": reservation.user.user_key if reservation.user else None,
-            "user_name": reservation.user.name if reservation.user else None,
-            "book_id": reservation.book_id,
-            "book_key": reservation.book.book_key if reservation.book else None,
-            "book_title": reservation.book.title if reservation.book else None,
-            "status_name": (
-                reservation.status.enumerator if reservation.status else None
-            ),
-        }

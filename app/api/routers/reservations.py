@@ -30,7 +30,7 @@ def get_reservations(
     limit: int = 100,
     session: Session = Depends(get_session),
 ):
-    return service.get_reservations(
+    return service.get_all(
         session,
         skip=skip,
         limit=limit,
@@ -42,7 +42,7 @@ def get_reservations(
 
 @router.get("/{reservation_key}", response_model=ReservationResponse)
 def get_reservation(reservation_key: UUID, session: Session = Depends(get_session)):
-    reservation = service.get_reservation_by_key(session, reservation_key)
+    reservation = service.get_by_key(session, reservation_key)
     if reservation is None:
         raise ReservationNotFound()
     return reservation

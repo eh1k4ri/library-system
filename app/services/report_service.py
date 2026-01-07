@@ -234,7 +234,7 @@ class ReportService:
         fmt: str,
     ) -> tuple[bytes, str, str]:
         normalized = self._validate_format(fmt)
-        reservations = self.reservation_service.get_reservations(
+        reservations = self.reservation_service.get_all(
             session=session,
             skip=skip,
             limit=limit,
