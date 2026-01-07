@@ -52,103 +52,47 @@ curl http://localhost:8000/
 # Métricas
 curl http://localhost:8000/metrics
 ```
+---
 
-## Lista de Funcionalidades Implementadas
-
-### Entidades Obrigatórias (100%)
--  **Usuário** → [`app/models/user.py`](app/models/user.py)
-- **Livro** → [`app/models/book.py`](app/models/book.py)
-- **Empréstimo** → [`app/models/loan.py`](app/models/loan.py)
-
-### Features Necessárias (100%)
-
-#### a) Gestão de Usuários
-- Listar todos os usuários → `GET /users/`
-- Cadastrar novo usuário → `POST /users/`
-- Buscar usuário por ID → `GET /users/{user_key}` (UUID utilizado visando segurança)
-- Listar todos os empréstimos associados a um usuário → `GET /users/{user_key}/loans`
-
-#### b) Catálogo de Livros
-- Listar livros → `GET /books/`
-- Cadastrar novo livro vinculado a um autor → `POST /books/`
-- Verificar disponibilidade para empréstimo → `GET /books/{book_key}/availability`
-
-#### c) Sistema de Empréstimos
-- Realizar empréstimo de livro→ `POST /loans/`
-- Processar devolução com cálculo de multa → `POST /loans/return`
-- Listar empréstimos ativos/atrasados → `GET /loans/?status=active&overdue=true`
-- Consultar histórico de empréstimos por usuário → `GET /users/{user_key}/loans`
-
-**Regras de Negócio:**
-- Prazo padrão: 14 dias
-- Multa: R$ 2,00 por dia de atraso
-- Usuário pode ter no máximo 3 empréstimos ativos
-
-### Funcionalidades Extras (Diferenciais)
-
-#### Básico (100%)
-- Implementar paginação em todas as listagens
-- Documentação automática com Swagger/OpenAPI
-- Validação robusta com Pydantic
-- Logging estruturado de operações
-
-#### Intermediário (100%)
-- Sistema de reservas de livros
-- Cache em memória (thread-safe)
-- Rate limiting nos endpoints
-- Testes automatizados (80+ testes)
-- Middleware de autenticação básica
-
-#### Avançado (100%)
-- Notificações de vencimento (email/webhook)
-- Sistema de renovação de empréstimos
-- Exportação de relatórios (CSV/PDF)
-- Observabilidade (métricas + health check)
-- Frontend em repositório separado: [library-system-frontend](https://github.com/eh1k4ri/library-front)
-
-## 📖 Funcionalidades Implementadas
+## Funcionalidades Implementadas
 
 ### Requisitos Obrigatórios
 
-#### **Gestão de Usuários**
-| Endpoint | Método | Descrição |
-|----------|--------|-----------|
-| `/users/` | GET | Lista todos os usuários com paginação |
-| `/users/` | POST | Cadastra novo usuário |
-| `/users/{user_key}` | GET | Busca usuário por UUID |
-| `/users/{user_key}` | PATCH | Atualiza dados do usuário |
-| `/users/{user_key}/status` | PATCH | Altera status (active/inactive/blocked) |
-| `/users/{user_key}/loans` | GET | Lista empréstimos do usuário |
+#### Entidades Obrigatórias
+| Entidade | Caminho do Arquivo |
+| :--- | :--- |
+| **Usuário** | `app/models/user.py` |
+| **Livro** | `app/models/book.py` |
+| **Empréstimo** | `app/models/loan.py` |
 
-**Validações:** E-mail único, normalização automática de dados, cache de consultas
+#### **Gestão de Usuários**
+| Requerimento | Método | Endpoint |
+| :--- | :---: | :--- |
+| Listar todos os usuários | `GET` | `/users/` |
+| Cadastrar novo usuário | `POST` | `/users/` |
+| Buscar usuário por UUID (usando uuid visando segurança) | `GET` | `/users/{user_key}` |
+| Listar todos os empréstimos ativos associados a um usuário | `GET` | `/users/{user_key}/loans?status=active` |
+
 
 #### **Catálogo de Livros**
-| Endpoint | Método | Descrição |
-|----------|--------|-----------|
-| `/books/` | GET | Lista livros com paginação e filtros |
-| `/books/` | POST | Cadastra livro com autor e gênero |
-| `/books/{book_key}` | GET | Busca livro por UUID |
-| `/books/{book_key}` | PATCH | Atualiza dados do livro |
-| `/books/{book_key}/status` | PATCH | Altera status (available/loaned/maintenance) |
-| `/books/{book_key}/availability` | GET | Verifica disponibilidade em tempo real |
-| `/books/genres` | GET | Lista gêneros cadastrados |
-
-**Features:** Controle de disponibilidade, múltiplos status, cache de consultas
+| Requerimento | Método | Endpoint |
+| :--- | :---: | :--- |
+| Listar todos os livros | `GET` | `/books/` |
+| Cadastrar novo livro vinculado a um autor | `POST` | `/books/` |
+| Verificar disponibilidade para empréstimo | `GET` | `/books/{book_key}/availability` |
 
 #### **Sistema de Empréstimos**
-| Endpoint | Método | Descrição |
-|----------|--------|-----------|
-| `/loans/` | GET | Lista empréstimos com filtros (status, overdue) |
-| `/loans/` | POST | Cria novo empréstimo |
-| `/loans/{loan_key}` | GET | Busca empréstimo por UUID |
-| `/loans/{loan_key}/renew` | POST | Renova empréstimo (+7 dias) |
-| `/loans/return` | POST | Processa devolução com cálculo de multa |
+| Requerimento | Método | Endpoint |
+| :--- | :---: | :--- |
+| Realizar empréstimo de livro | `POST` | `/loans/` |
+| Processar devolução com cálculo de multa | `POST` | `/loans/return` |
+| Listar empréstimos ativos/atrasados | `GET` | `/loans/` |
+| Consultar histórico de empréstimos por usuário | `GET` | `/users/{user_key}/loans` |
 
 **Regras de Negócio Implementadas:**
-- ✅ Prazo padrão: 14 dias (`LOAN_DEFAULT_DAYS`)
-- ✅ Multa: R$ 2,00 por dia de atraso (`LOAN_FINE_PER_DAY`)
-- ✅ Máximo 3 empréstimos ativos por usuário (`LOAN_MAX_ACTIVE_LOANS`)
-- ✅ Renovação: +7 dias (apenas se não estiver em atraso)
+- Prazo padrão: 14 dias (`LOAN_DEFAULT_DAYS`)
+- Multa: R$ 2,00 por dia de atraso (`LOAN_FINE_PER_DAY`)
+- Máximo 3 empréstimos ativos por usuário (`LOAN_MAX_ACTIVE_LOANS`)
 
 **Validações Automáticas:**
 - Usuário deve estar ativo
@@ -157,8 +101,33 @@ curl http://localhost:8000/metrics
 - Histórico completo com eventos imutáveis
 
 ### Funcionalidades Extras
+#### Básico
+| Requerimento | Método | Endpoint/Path |
+| :--- | :---: | :--- |
+| Implementar paginação em todas as listagens | `GET` | Todos os endpoints de listagem |
+| Documentação automática com Swagger/OpenAPI | `GET` | `/docs` |
+| Validação robusta com Pydantic | N/A | `/app/schemas` |
+| Logging estruturado de operações | N/A | `/app/core/logging` |
 
-#### **Sistema de Reservas** (Intermediário)
+#### Intermediário
+| Requerimento | Método | Endpoint/Path |
+| :--- | :---: | :--- |
+| Sistema de reservas de livros | `POST`/`GET` | [Ver Tabela de Sistema de Reservas](#sistema-de-reservas)|
+| Cache para consultas frequentes | N/A | `/app/utils/cache.py` |
+| Rate limiting nos endpoints | N/A | `app/core/middlewares/rate_limit.py` |
+| Testes automatizados (unitários + integração) | N/A | `/tests/` |
+| Middleware de autenticação básica | N/A | `app/core/middlewares/auth.py` |
+
+#### Avançado
+| Requerimento | Método | Endpoint/Path |
+| :--- | :---: | :--- |
+| Notificações de vencimento (email/webhook) | N/A | `app/services/notification_service.py` |
+| Sistema de renovação de empréstimos | `POST` | `/loans/{loan_key}/renew` |
+| Exportação de relatórios (CSV/PDF) | `GET` | [Ver Tabela de Relatórios e Exportação](#relatórios-e-exportação) |
+| Observabilidade (métricas + health check) | N/A | [Ver Tabela de Observabilidade](#observabilidade) |
+| Frontend em repositório separado | N/A | [library-system-frontend](https://github.com/eh1k4ri/library-front) |
+
+#### **Sistema de Reservas**
 | Endpoint | Método | Descrição |
 |----------|--------|-----------|
 | `/reservations/` | GET | Lista reservas com filtros |
@@ -167,9 +136,7 @@ curl http://localhost:8000/metrics
 | `/reservations/{key}/cancel` | POST | Cancela reserva |
 | `/reservations/{key}/complete` | POST | Marca reserva como concluída |
 
-**Features:** Expiração automática (7 dias), notificações via webhook, validações
-
-#### **Relatórios e Exportação** (Avançado)
+#### **Relatórios e Exportação** 
 | Endpoint | Formato | Descrição |
 |----------|---------|-----------|
 | `/reports/loans/export?format=csv` | CSV | Exporta empréstimos |
@@ -178,7 +145,7 @@ curl http://localhost:8000/metrics
 | `/reports/books/export` | CSV/PDF | Exporta livros |
 | `/reports/reservations/export` | CSV/PDF | Exporta reservas |
 
-#### **Observabilidade** (Avançado)
+#### **Observabilidade**
 | Endpoint | Descrição |
 |----------|-----------|
 | `/docs` | Documentação Swagger/OpenAPI interativa |
@@ -193,7 +160,7 @@ curl http://localhost:8000/metrics
 
 ---
 
-## 🏗️ Decisões Arquiteturais
+## Decisões Arquiteturais
 
 ### 1. Arquitetura em Camadas (Service Layer Pattern)
 
@@ -202,7 +169,7 @@ curl http://localhost:8000/metrics
 │   API Layer (Routers)               │  ← Recebe requisições HTTP
 │   app/api/routers/                  │
 ├─────────────────────────────────────┤
-│   Service Layer (Lógica de Negócio)│  ← Regras de negócio
+│   Service Layer                     │  ← Regras de negócio
 │   app/services/                     │
 ├─────────────────────────────────────┤
 │   Model Layer (ORM)                 │  ← Acesso a dados
@@ -216,7 +183,7 @@ curl http://localhost:8000/metrics
 - Separação clara de responsabilidades
 - Facilita testes unitários e de integração
 - Permite reutilização de lógica de negócio
-- Manutenção e evolução simplificadas
+- Manutenção e escalabilidade simplificadas
 
 ### 2. UUIDs como Identificadores Públicos
 
@@ -235,85 +202,21 @@ curl http://localhost:8000/metrics
 - LRU com limite de 1000 itens
 
 **Justificativa:**
-- **Simplicidade:** Sem dependências externas (Redis opcional)
 - **Performance:** Reduz carga no banco para consultas frequentes
-- **Portabilidade:** Funciona em qualquer ambiente
 
 ### 4. Tratamento de Erros Customizado
 
 **Implementação:**
 - Códigos únicos (LBS001-LBS018)
 - Estrutura padronizada: `{"code": "...", "title": "...", "description": "..."}`
-- Suporte a i18n (pt-BR)
 
 **Justificativa:**
 - **Rastreabilidade:** Fácil identificar origem do erro
 - **Suporte:** Usuários podem reportar código específico
 - **Consistência:** Respostas uniformes em toda API
 
-### 5. Event Sourcing Parcial
 
-**Implementação:** Tabelas de eventos (`LoanEvent`, `ReservationEvent`, `UserEvent`, `BookEvent`)
-
-**Justificativa:**
-- **Auditoria:** Histórico imutável de todas as operações
-- **Debugging:** Reprodução de estados passados
-- **Compliance:** Rastreabilidade para regulamentações
-
-### 6. Paginação Obrigatória
-
-**Implementação:** Todos os endpoints de listagem exigem `page` e `per_page`
-
-**Justificativa:**
-- **Performance:** Evita carregamento de milhares de registros
-- **Escalabilidade:** Sistema preparado para crescimento
-- **UX:** Respostas rápidas mesmo com grande volume
-
-### 7. Validação com Pydantic v2
-
-**Implementação:**
-- Schemas em `app/schemas/`
-- Validators customizados
-- Normalização automática (trim, lowercase)
-
-**Justificativa:**
-- **DRY:** Validações centralizadas
-- **Tipagem:** Type hints completos
-- **Documentação:** Schemas geram OpenAPI automaticamente
-
-### 8. Middlewares para Cross-Cutting Concerns
-
-**Implementação:**
-- `basic_auth`: Autenticação básica
-- `metrics_middleware`: Coleta de métricas
-- `rate_limit`: Limite de requisições por IP
-- `log_requests`: Logging estruturado
-
-**Justificativa:**
-- **Modularidade:** Concerns separados da lógica de negócio
-- **Reutilização:** Aplicado a todos os endpoints
-- **Manutenção:** Fácil adicionar/remover funcionalidades
-
-### 9. Migrações com Alembic
-
-**Implementação:** Versionamento de schema em `alembic/versions/`
-
-**Justificativa:**
-- **Rastreabilidade:** Histórico completo de mudanças no schema
-- **Reversibilidade:** Rollback seguro em caso de problemas
-- **CI/CD:** Automação de deploys de banco
-
-### 10. Testes Abrangentes
-
-**Implementação:** 80+ testes em `tests/` (unitários + integração)
-
-**Justificativa:**
-- **Confiabilidade:** Garante funcionamento correto
-- **Refatoração:** Segurança para mudanças
-- **Documentação:** Testes servem como exemplos de uso
-
-
-## 📖 Exemplos de Uso
+## Exemplos de Uso
 
 > **Nota**: Para documentação completa e teste interativo, acesse **http://localhost:8000/docs** (Swagger)
 
@@ -374,7 +277,7 @@ print(f"Multa: R$ {returned['fine_amount']:.2f}")
 
 ---
 
-## 📞 Links Úteis
+## Links Úteis
 
 - **Swagger UI**: http://localhost:8000/docs
 - **ReDoc**: http://localhost:8000/redoc
