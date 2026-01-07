@@ -1,9 +1,57 @@
 # Library System API - Sistema de Gerenciamento de Biblioteca Digital
 
-> **Case Técnico - BTG Pactual**  
-> API REST para gerenciar biblioteca digital com controle de livros, usuários e empréstimos.
-
 ---
+
+## Instalação e Execução
+
+### Setup Rápido
+
+```bash
+# 1. Clone e entre no diretório
+git clone https://github.com/eh1k4ri/library-system.git
+cd library_system
+
+# 2. Crie ambiente virtual
+python -m venv venv
+venv\Scripts\activate  # Windows ou source venv/bin/activate (Linux/Mac)
+
+# 3. Instale dependências
+pip install -r requirements.txt
+
+# 4. Configure .env (copiar do .env.example)
+cp .env.example .env
+
+# 5. Inicie banco com Docker
+docker-compose up -d
+
+# 6. Execute migrações
+alembic upgrade head
+
+# 7. Inicie a API
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+
+# 8. (Opcional) Inicie o Prometheus para monitorar métricas
+cd ops/monitoring
+copy prometheus.example.yml prometheus.yml
+docker run --rm -p 9090:9090 -v "$(pwd)/prometheus.yml:/etc/prometheus/prometheus.yml" prom/prometheus --config.file=/etc/prometheus/prometheus.yml
+```
+
+Acesse:
+- **API (Swagger)**: http://localhost:8000/docs
+- **Prometheus**: http://localhost:9090
+
+### Verificação
+
+```bash
+# Testes
+pytest
+
+# Healthcheck
+curl http://localhost:8000/
+
+# Métricas
+curl http://localhost:8000/metrics
+```
 
 ## Lista de Funcionalidades Implementadas
 
@@ -57,57 +105,6 @@
 - Exportação de relatórios (CSV/PDF)
 - Observabilidade (métricas + health check)
 - Frontend em repositório separado: [library-system-frontend](https://github.com/eh1k4ri/library-front)
-
-## 🚀 Instalação e Execução
-
-### Setup Rápido
-
-```bash
-# 1. Clone e entre no diretório
-git clone https://github.com/eh1k4ri/library-system.git
-cd library_system
-
-# 2. Crie ambiente virtual
-python -m venv venv
-venv\Scripts\activate  # Windows ou source venv/bin/activate (Linux/Mac)
-
-# 3. Instale dependências
-pip install -r requirements.txt
-
-# 4. Configure .env (copiar do .env.example)
-cp .env.example .env
-
-# 5. Inicie banco com Docker
-docker-compose up -d
-
-# 6. Execute migrações
-alembic upgrade head
-
-# 7. Inicie a API
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-
-# 8. (Opcional) Inicie o Prometheus para monitorar métricas
-cd ops/monitoring
-copy prometheus.example.yml prometheus.yml
-docker run --rm -p 9090:9090 -v "$(pwd)/prometheus.yml:/etc/prometheus/prometheus.yml" prom/prometheus --config.file=/etc/prometheus/prometheus.yml
-```
-
-Acesse:
-- **API (Swagger)**: http://localhost:8000/docs
-- **Prometheus**: http://localhost:9090
-
-### Verificação
-
-```bash
-# Testes
-pytest
-
-# Healthcheck
-curl http://localhost:8000/
-
-# Métricas
-curl http://localhost:8000/metrics
-```
 
 ## 📖 Funcionalidades Implementadas
 
